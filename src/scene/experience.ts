@@ -37,15 +37,13 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
   const canvas = document.querySelector<HTMLCanvasElement>("#gl")!;
   const introEl = document.querySelector<HTMLElement>("#intro")!;
   const exEl = document.querySelector<HTMLElement>("#assistencia")!;
-  const word = document.querySelector<HTMLElement>(".word")!;
-  const band = document.querySelector<HTMLElement>(".band")!;
   const lgEl = document.querySelector<HTMLElement>("#lg")!;
   const stages = [...document.querySelectorAll<HTMLElement>(".st")];
   const tags = [...document.querySelectorAll<HTMLElement>(".tag")];
   const v3 = new THREE.Vector3();
   const legend = [...document.querySelectorAll<HTMLElement>("#lg li")];
   const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let mob = innerWidth < 760;
+  let mob = innerWidth < 900;
 
   const R = createRenderer(canvas, mob);
   if (!R) return false;
@@ -141,7 +139,7 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
   }
 
   function resize(): void {
-    mob = innerWidth < 760;
+    mob = innerWidth < 900;
     R!.setPixelRatio(lowQ ? 1 : Math.min(devicePixelRatio, mob ? 1.5 : 2));
     R!.setSize(innerWidth, innerHeight, false);
     C.aspect = innerWidth / innerHeight;
@@ -160,12 +158,12 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
     const a = sm(E, 0.12, 0.4) - sm(E, 0.6, 0.88);
     const k = mob ? 0.6 : 1;
     for (const o of parts) o.position.z = o.userData.z + o.userData.o * a * k;
-    phone.position.set(mob ? 0 : 1.15, mob ? 0.75 : -0.05, 0);
-    phone.scale.setScalar(mob ? 1.05 : 1.45);
+    // no início o celular é grande e invade o painel; na vista explodida diminui para caber na tela
+    phone.position.set(0, mob ? 0.75 : 0, 0);
+    phone.scale.setScalar((mob ? 1.05 : 1.75) - (mob ? 0.2 : 0.4) * a);
     const idle = RM ? 0 : Math.sin(t * 0.5) * 0.3 + mx * 0.4;
     phone.rotation.y = idle * (1 - 0.7 * a) - 0.8 * a + sm(E, 0.9, 1) * 6.283;
     phone.rotation.x = 0.14 * a + (RM ? 0 : my * 0.12);
-    const fade = String(clamp(1 - scrollY / (innerHeight * 0.8)));
     // câmera de inspeção: desloca e aproxima em direção à peça destacada
     const win = (i: number): number =>
       sm(E, TAGS[i].w[0] - 0.03, TAGS[i].w[0] + 0.02) * (1 - sm(E, TAGS[i].w[1] - 0.02, TAGS[i].w[1] + 0.03));
@@ -182,8 +180,6 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
       cw += w;
     });
     C.position.set(cx * (mob ? 0.2 : 0.4), cy * (mob ? 0.2 : 0.4), baseZ - cw * (mob ? 0.4 : 0.8));
-    word.style.opacity = fade;
-    band.style.opacity = fade;
     stages.forEach((s, i) => {
       const o = clamp(Math.min((E - STAGES[i][0]) / 0.04, (STAGES[i][1] - E) / 0.04));
       s.style.opacity = String(o);

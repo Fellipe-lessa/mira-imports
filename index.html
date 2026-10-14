@@ -11,12 +11,12 @@
 <meta property="og:type" content="website">
 <link rel="icon" href="/logo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Geist:wght@400;500;600&display=swap">
 </head>
 <body class="intro">
+<a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
 <canvas id="gl" aria-hidden="true"></canvas>
-<div class="band" aria-hidden="true"></div>
-<div class="word" aria-hidden="true">MIRA</div>
+<div class="grain" aria-hidden="true"></div>
 <div class="prog" aria-hidden="true"></div>
 
 <div id="intro" role="region" aria-label="Introdução">
@@ -49,20 +49,21 @@
   </div>
 </div>
 
-<main>
+<main id="conteudo">
   <section class="hero" id="inicio">
+    <div class="panel" aria-hidden="true"></div>
+    <div class="band" aria-hidden="true"></div>
     <div class="hc">
-      <img class="fb logo" src="/logo.jpg" alt="Logo da Mira Imports" width="300" height="300">
+      <img class="fb logo" src="/logo.jpg" alt="Logo da Mira Imports" width="260" height="260">
       <h1>Seu universo. Conectado.</h1>
       <p class="m">Venda, compra e assistência técnica de celulares com atendimento próximo e soluções para o seu dia a dia.</p>
       <div class="row"><a class="btn" href="#catalogo">EXPLORAR PRODUTOS</a><a class="btn g" data-wa="Olá! Preciso de assistência técnica para o meu aparelho.">PRECISO DE ASSISTÊNCIA</a></div>
     </div>
-    <nav class="strip" aria-label="Acesso rápido">
-      <a href="#catalogo" data-cat="celulares"><b>Celulares</b><span>Novos e usados, conforme a oferta</span></a>
-      <a href="#assistencia"><b>Assistência técnica</b><span>Avaliação do seu aparelho</span></a>
-      <a href="#catalogo" data-cat="acessorios"><b>Acessórios</b><span>Capinhas, películas e carregadores</span></a>
-      <a data-wa="Olá! Quero avaliar o meu celular."><b>Avaliar meu celular</b><span>Consulte pelo WhatsApp</span></a>
-    </nav>
+    <aside class="aside" aria-label="Acesso rápido">
+      <a href="#catalogo" data-cat="celulares"><small>Novos e usados, conforme a oferta</small><b>Celulares</b></a>
+      <a href="#assistencia"><small>Avaliação do seu aparelho</small><b>Assistência técnica</b></a>
+      <a href="#catalogo" data-cat="acessorios"><small>Capinhas, películas e carregadores</small><b>Acessórios</b></a>
+    </aside>
   </section>
 
   <section class="ex" id="assistencia" aria-label="Assistência técnica">
@@ -77,7 +78,7 @@
     </div>
   </section>
 
-  <section class="solid" id="catalogo">
+  <section class="solid pearl" id="catalogo">
     <div class="wrap">
       <h2>Tecnologia para o seu dia.</h2>
       <p class="m">Catálogo de demonstração. Os itens abaixo são exemplos e serão trocados pelos produtos reais da Mira Imports.</p>
@@ -101,19 +102,19 @@
     </div>
   </section>
 
-  <section class="solid" id="diferenciais"><div class="wrap"><h2>Por que a Mira Imports</h2><div class="dif" id="dif"></div></div></section>
+  <section class="solid" id="diferenciais"><div class="wrap split"><h2>Por que a Mira Imports</h2><div class="dif" id="dif"></div></div></section>
 
   <section class="solid" id="sobre">
     <div class="wrap split">
       <h2>Sobre a loja</h2>
-      <div><p class="m" style="max-width:56ch">Texto institucional a ser preenchido pela Mira Imports: história, atendimento e diferenciais reais da loja.</p><span class="mark" aria-hidden="true"></span></div>
+      <div><p class="m">Texto institucional a ser preenchido pela Mira Imports: história, atendimento e diferenciais reais da loja.</p><span class="mark" aria-hidden="true"></span></div>
     </div>
   </section>
 
-  <section class="solid" id="contato">
+  <section class="solid pearl" id="contato">
     <div class="wrap split">
       <div><h2>Fale com a loja.</h2><p class="m">Os botões abrem o WhatsApp com uma mensagem pronta para cada assunto.</p></div>
-      <div class="row col"><a class="btn" data-wa="Olá! Quero falar com a loja.">FALAR COM A LOJA</a><a class="btn g" data-wa="Olá! Quero consultar um produto.">CONSULTAR UM PRODUTO</a><a class="btn g" data-wa="Olá! Preciso de assistência técnica.">PRECISO DE ASSISTÊNCIA</a></div>
+      <div class="row col"><a class="btn" data-wa="Olá! Quero falar com a loja.">FALAR COM A LOJA</a><a class="btn g" data-wa="Olá! Quero consultar um produto.">CONSULTAR UM PRODUTO</a><a class="btn t" data-wa="Olá! Preciso de assistência técnica.">Preciso de assistência técnica</a></div>
     </div>
   </section>
 </main>
