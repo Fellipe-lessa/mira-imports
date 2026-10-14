@@ -74,6 +74,9 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
   S.add(intro.group);
 
   let introOn = true;
+  let lowQ = false;
+  let frames = 0;
+  let acc = 0;
   let baseZ = 6;
   let speed = 1;
   let tI = 0;
@@ -108,19 +111,21 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
 
   function resize(): void {
     mob = innerWidth < 760;
-    R!.setPixelRatio(Math.min(devicePixelRatio, mob ? 1.5 : 2));
+    R!.setPixelRatio(lowQ ? 1 : Math.min(devicePixelRatio, mob ? 1.5 : 2));
     R!.setSize(innerWidth, innerHeight, false);
     C.aspect = innerWidth / innerHeight;
     C.updateProjectionMatrix();
     if (introOn) intro.group.scale.setScalar(Math.min(1, (3.78 * C.aspect * 0.9) / 4.2));
   }
 
-  function scene(t: number): void {
-    mx += (tx - mx) * 0.06;
-    my += (ty - my) * 0.06;
+  function scene(t: number, dt: number): void {
+    // amortecimento independente da taxa de quadros: mesma sensação em 60 Hz e 144 Hz
+    const k1 = 1 - Math.exp(-dt * 6);
+    mx += (tx - mx) * k1;
+    my += (ty - my) * k1;
     const len = Math.max(1, exEl.offsetHeight - innerHeight);
     const e = clamp((scrollY - exEl.offsetTop) / len);
-    E += (e - E) * (RM ? 1 : 0.12);
+    E += (e - E) * (RM ? 1 : 1 - Math.exp(-dt * 9));
     const a = sm(E, 0.12, 0.4) - sm(E, 0.6, 0.88);
     const k = mob ? 0.6 : 1;
     for (const o of parts) o.position.z = o.userData.z + o.userData.o * a * k;
@@ -149,6 +154,7 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
     stages.forEach((s, i) => {
       const o = clamp(Math.min((E - STAGES[i][0]) / 0.04, (STAGES[i][1] - E) / 0.04));
       s.style.opacity = String(o);
+      s.style.setProperty("--o", String(o));
       s.style.pointerEvents = o > 0.5 ? "auto" : "none";
     });
     const idx = E > 0.3 && E < 0.72 ? clamp(Math.floor(((E - 0.3) / 0.4) * 4), 0, 3) : -1;
@@ -179,13 +185,23 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
       baseZ = intro.update(tI);
       introEl.classList.toggle("tg", tI > 3.6 && tI < INTRO_DISSOLVE);
       if (tI > INTRO_DISSOLVE + 0.7) revealHome();
-      if (phone.visible) scene(now / 1000);
+      if (phone.visible) scene(now / 1000, dt);
       if (tI >= INTRO_END) endIntro();
     } else {
-      scene(now / 1000);
+      scene(now / 1000, dt);
     }
     if (!phone.visible) C.position.z = baseZ;
-    R!.render(S, C);
+    // qualidade adaptativa: se a média dos primeiros quadros for lenta, reduz a resolução
+    if (!introOn && !lowQ && frames < 120) {
+      acc += dt;
+      if (++frames === 120 && acc / frames > 0.028) {
+        lowQ = true;
+        resize();
+      }
+    }
+    // depois da seção do celular o catálogo cobre a tela: não há o que desenhar
+    const covered = !introOn && scrollY >= exEl.offsetTop + exEl.offsetHeight - 32;
+    if (!covered) R!.render(S, C);
   }
 
   // "Pular" acelera a abertura, que termina com a mesma dissolução, sem corte brusco

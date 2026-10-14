@@ -135,3 +135,5 @@ nav.top a.act{color:var(--w)}
 .tag b{font:700 12px "Chakra Petch",sans-serif;letter-spacing:.14em;padding:5px 12px;border:1px solid var(--y);border-radius:20px;background:#050505cc}
 @media(min-width:900px){.tag{display:flex}}
 .nogl .tag{display:none}
+.st{transform:translateY(calc(-50% + (1 - var(--o,0)) * 28px))}
+@media(max-width:760px){.st{transform:translateY(calc((1 - var(--o,0)) * 28px))}}
