@@ -128,3 +128,10 @@ nav.top a.act:after,nav.top a:not(.btn):hover:after{transform:scaleX(1)}
 nav.top a.act{color:var(--w)}
 .prog{position:fixed;top:0;left:0;right:0;height:2px;background:var(--y);transform:scaleX(0);transform-origin:left;z-index:55;pointer-events:none}
 @media(hover:hover){.card:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(260px circle at var(--mx,50%) var(--my,50%),#fff2001f,transparent 70%)}.card:hover:before{opacity:1}}
+
+.tag{position:absolute;left:0;top:0;display:none;align-items:center;opacity:0;pointer-events:none;will-change:transform}
+.tag .dot{width:9px;height:9px;margin-left:-4.5px;border-radius:50%;background:var(--y);box-shadow:0 0 0 4px #fff20033}
+.tag i{width:64px;height:1px;background:var(--y)}
+.tag b{font:700 12px "Chakra Petch",sans-serif;letter-spacing:.14em;padding:5px 12px;border:1px solid var(--y);border-radius:20px;background:#050505cc}
+@media(min-width:900px){.tag{display:flex}}
+.nogl .tag{display:none}

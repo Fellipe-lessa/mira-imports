@@ -57,6 +57,80 @@ function frameGeo(w: number, h: number, r: number, d: number, hl: number): THREE
   return g;
 }
 
+function noiseTex(w: number, h: number, draw: (x: CanvasRenderingContext2D) => void, repeat: number): THREE.CanvasTexture {
+  const c = document.createElement("canvas");
+  c.width = w;
+  c.height = h;
+  draw(c.getContext("2d")!);
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(repeat, repeat);
+  t.anisotropy = 4;
+  return t;
+}
+
+/** Textura de rugosidade do titânio escovado. */
+const brushTex = (): THREE.CanvasTexture =>
+  noiseTex(256, 256, (x) => {
+    x.fillStyle = "#999";
+    x.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 900; i++) {
+      const v = 110 + Math.floor(Math.random() * 100);
+      x.fillStyle = `rgb(${v},${v},${v})`;
+      x.fillRect(0, Math.random() * 256, 256, 1);
+    }
+  }, 3);
+
+/** Textura de rugosidade do vidro fosco traseiro. */
+const grainTex = (): THREE.CanvasTexture =>
+  noiseTex(128, 128, (x) => {
+    x.fillStyle = "#bbb";
+    x.fillRect(0, 0, 128, 128);
+    for (let i = 0; i < 8000; i++) {
+      const v = 140 + Math.floor(Math.random() * 100);
+      x.fillStyle = `rgb(${v},${v},${v})`;
+      x.fillRect(Math.floor(Math.random() * 128), Math.floor(Math.random() * 128), 1, 1);
+    }
+  }, 6);
+
+/** Placa de circuito com trilhas e pontos de solda. */
+const pcbTex = (): THREE.CanvasTexture =>
+  noiseTex(256, 256, (x) => {
+    x.fillStyle = "#0f1a14";
+    x.fillRect(0, 0, 256, 256);
+    x.strokeStyle = "#7a5c22";
+    x.lineWidth = 1.2;
+    for (let i = 0; i < 70; i++) {
+      let px = Math.random() * 256;
+      let py = Math.random() * 256;
+      x.beginPath();
+      x.moveTo(px, py);
+      for (let k = 0; k < 4; k++) {
+        if (k % 2) py += (Math.random() - 0.5) * 80;
+        else px += (Math.random() - 0.5) * 80;
+        x.lineTo(px, py);
+      }
+      x.stroke();
+    }
+    x.fillStyle = "#b08d57";
+    for (let i = 0; i < 90; i++) {
+      x.beginPath();
+      x.arc(Math.random() * 256, Math.random() * 256, 1.6, 0, 6.283);
+      x.fill();
+    }
+  }, 2);
+
+/** Parafuso com fenda em cruz, apontado para +z. */
+function screw(m: THREE.Material, d: THREE.Material): THREE.Group {
+  const g = new THREE.Group();
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.006, 14).rotateX(Math.PI / 2), m));
+  const a = box(0.016, 0.003, 0.002, d);
+  const b = box(0.003, 0.016, 0.002, d);
+  a.position.z = b.position.z = 0.0032;
+  g.add(a, b);
+  return g;
+}
+
 /** Ambiente de estúdio desenhado em canvas, usado nos reflexos do metal e do vidro. */
 function makeEnv(R: THREE.WebGLRenderer): THREE.Texture {
   const c = document.createElement("canvas");
@@ -159,17 +233,18 @@ export function buildPhone(S: THREE.Scene, R: THREE.WebGLRenderer, logoUrl: stri
 
   const M = (c: number, m: number, r: number, o: THREE.MeshStandardMaterialParameters = {}): THREE.MeshStandardMaterial =>
     new THREE.MeshStandardMaterial({ color: c, metalness: m, roughness: r, ...o });
-  const ti = M(0x3a3a3e, 1, 0.32);
+  const ti = M(0x3a3a3e, 1, 0.55, { roughnessMap: brushTex() });
   const dk = M(0x151517, 0.5, 0.5);
   const glass = M(0x020203, 0.2, 0.06);
   const al = M(0xb9bcc2, 0.9, 0.4);
-  const pcb = M(0x0f1a14, 0.3, 0.6);
+  const pcb = M(0xffffff, 0.3, 0.6, { map: pcbTex() });
   const cu = M(0xb87333, 0.9, 0.35);
   const bk = M(0x000000, 0, 0.3);
   const wh = M(0xdddddd, 0, 0.8);
   const frost = new THREE.MeshPhysicalMaterial({
     color: 0x2d2d30,
-    roughness: 0.55,
+    roughness: 0.8,
+    roughnessMap: grainTex(),
     metalness: 0.15,
     clearcoat: 0.25,
     clearcoatRoughness: 0.5,
@@ -231,6 +306,11 @@ export function buildPhone(S: THREE.Scene, R: THREE.WebGLRenderer, logoUrl: stri
       fr.add(h);
     }
   }
+  for (const s of [-1, 1]) {
+    const p = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.01, 12), bk);
+    p.position.set(s * 0.1, -H / 2 + 0.001, 0);
+    fr.add(p);
+  }
   put(fr, 0, 0);
 
   // placa principal
@@ -246,6 +326,11 @@ export function buildPhone(S: THREE.Scene, R: THREE.WebGLRenderer, logoUrl: stri
   const cn = box(0.08, 0.03, 0.008, cu);
   cn.position.set(0, -0.2, 0.011);
   bd.add(cn);
+  for (const [x, y] of [[-0.28, 0.2], [0.28, 0.2], [-0.28, -0.2], [0.28, -0.2]] as const) {
+    const sw = screw(al, bk);
+    sw.position.set(x, y, 0.01);
+    bd.add(sw);
+  }
   bd.position.set(0, 0.46, 0);
   put(bd, -0.012, -0.55);
 
@@ -269,6 +354,17 @@ export function buildPhone(S: THREE.Scene, R: THREE.WebGLRenderer, logoUrl: stri
     t.position.set(x, -0.45, 0.014);
     bt.add(t);
   }
+  const br = box(0.5, 0.05, 0.004, al);
+  br.position.set(0, 0.34, 0.015);
+  bt.add(br);
+  for (const x of [-0.2, 0.2]) {
+    const sw = screw(al, bk);
+    sw.position.set(x, 0.34, 0.017);
+    bt.add(sw);
+  }
+  const bc = box(0.12, 0.03, 0.006, cu);
+  bc.position.set(0, 0.42, 0);
+  bt.add(bc);
   bt.position.set(0, -0.2, 0);
   put(bt, -0.02, -0.85);
 
@@ -283,6 +379,14 @@ export function buildPhone(S: THREE.Scene, R: THREE.WebGLRenderer, logoUrl: stri
     g.position.set(x, y, -0.02);
     cam.add(g);
   });
+  const shield = box(0.3, 0.3, 0.004, dk);
+  shield.position.z = 0.0095;
+  cam.add(shield);
+  for (const [x, y] of [[-0.15, 0.15], [0.15, -0.15]] as const) {
+    const sw = screw(al, bk);
+    sw.position.set(x, y, 0.0115);
+    cam.add(sw);
+  }
   cam.position.set(-0.19, 0.55, 0);
   put(cam, -0.028, -1.15);
 

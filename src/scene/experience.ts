@@ -12,6 +12,14 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
+/** Rótulos técnicos: peça (índice em parts) e janela de rolagem em que ficam visíveis. */
+const TAGS: { part: number; w: [number, number] }[] = [
+  { part: 0, w: [0.3, 0.4] }, // tela
+  { part: 5, w: [0.4, 0.5] }, // câmeras
+  { part: 4, w: [0.5, 0.6] }, // bateria
+  { part: 2, w: [0.6, 0.7] }, // placa principal
+];
+
 /** Intervalos (progresso da seção de assistência) em que cada texto fica visível. */
 const STAGES: [number, number][] = [[-1, 0.2], [0.2, 0.46], [0.46, 0.7], [0.7, 0.88], [0.88, 2]];
 
@@ -32,6 +40,8 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
   const band = document.querySelector<HTMLElement>(".band")!;
   const lgEl = document.querySelector<HTMLElement>("#lg")!;
   const stages = [...document.querySelectorAll<HTMLElement>(".st")];
+  const tags = [...document.querySelectorAll<HTMLElement>(".tag")];
+  const v3 = new THREE.Vector3();
   const legend = [...document.querySelectorAll<HTMLElement>("#lg li")];
   const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
   let mob = innerWidth < 760;
@@ -120,6 +130,20 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
     phone.rotation.y = idle * (1 - 0.7 * a) - 0.8 * a + sm(E, 0.9, 1) * 6.283;
     phone.rotation.x = 0.14 * a + (RM ? 0 : my * 0.12);
     const fade = String(clamp(1 - scrollY / (innerHeight * 0.8)));
+    // câmera de inspeção: desloca e aproxima em direção à peça destacada
+    const win = (i: number): number =>
+      sm(E, TAGS[i].w[0] - 0.03, TAGS[i].w[0] + 0.02) * (1 - sm(E, TAGS[i].w[1] - 0.02, TAGS[i].w[1] + 0.03));
+    let cx = 0;
+    let cy = 0;
+    let cw = 0;
+    TAGS.forEach((tg, i) => {
+      const w = win(i);
+      parts[tg.part].getWorldPosition(v3);
+      cx += v3.x * w;
+      cy += v3.y * w;
+      cw += w;
+    });
+    C.position.set(cx * (mob ? 0.2 : 0.4), cy * (mob ? 0.2 : 0.4), baseZ - cw * (mob ? 0.4 : 0.8));
     word.style.opacity = fade;
     band.style.opacity = fade;
     stages.forEach((s, i) => {
@@ -130,6 +154,16 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
     const idx = E > 0.3 && E < 0.72 ? clamp(Math.floor(((E - 0.3) / 0.4) * 4), 0, 3) : -1;
     legend.forEach((l, i) => l.classList.toggle("on", i === idx));
     lgEl.style.opacity = a > 0.2 ? "1" : "0";
+
+    // rótulos técnicos presos às peças
+    C.updateMatrixWorld();
+    TAGS.forEach((tg, i) => {
+      const el = tags[i];
+      if (!el) return;
+      parts[tg.part].getWorldPosition(v3).project(C);
+      el.style.opacity = String(win(i));
+      el.style.transform = `translate(${((v3.x + 1) / 2) * innerWidth}px, ${((1 - v3.y) / 2) * innerHeight}px)`;
+    });
   }
 
   function loop(now: number): void {
@@ -150,7 +184,7 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
     } else {
       scene(now / 1000);
     }
-    C.position.z = baseZ;
+    if (!phone.visible) C.position.z = baseZ;
     R!.render(S, C);
   }
 
