@@ -72,3 +72,22 @@ A cada `git push` na branch `main`, o site é publicado de novo.
 - Trocar `public/logo.jpg` por um arquivo maior (o atual tem 150 x 150 pixels e fica suave na tela de bloqueio do celular).
 - Escrever o texto da seção "Sobre a loja" e revisar os diferenciais.
 - Validar quais serviços a loja realmente oferece (reparos, películas, avaliação de aparelhos usados).
+
+## Ajustes rápidos do upgrade
+
+| O que | Onde |
+| --- | --- |
+| Duração da abertura (dissolução e fim) | `INTRO_DISSOLVE` e `INTRO_END` em `src/scene/intro.ts` |
+| Intensidade do relevo do olho na logo 3D | `BUMP` em `src/scene/intro.ts` |
+| Cores e luz da faixa central | `.band` em `src/styles.css` |
+| Peças, rótulos e janelas de rolagem da desmontagem | `src/scene/phone.ts` e `TAGS` em `src/scene/experience.ts` |
+
+## Trocar o celular procedural por um modelo GLB de iPhone
+
+O celular atual é montado por código (geometria e materiais próprios). Para usar um modelo 3D pronto, ele precisa ter:
+
+- licença que permita uso comercial e redistribuição do arquivo (por exemplo CC0 ou CC-BY, com o crédito exigido);
+- peças separadas e nomeadas: tela e vidro, estrutura, câmeras, bateria, placa principal e vidro traseiro;
+- materiais PBR e texturas em tamanho razoável (de preferência arquivo abaixo de 15 MB, comprimido).
+
+Para conferir o que o arquivo tem, abra-o em https://gltf-viewer.donmccurdy.com e veja a árvore de nomes das peças. Guarde o arquivo em `public/models/` e passe a lista de nomes para integrar a `src/scene/phone.ts`. Não use o logotipo da Apple, e a loja não deve ser apresentada como autorizada pela fabricante.
