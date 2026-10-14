@@ -82,12 +82,18 @@ A cada `git push` na branch `main`, o site é publicado de novo.
 | Cores e luz da faixa central | `.band` em `src/styles.css` |
 | Peças, rótulos e janelas de rolagem da desmontagem | `src/scene/phone.ts` e `TAGS` em `src/scene/experience.ts` |
 
-## Trocar o celular procedural por um modelo GLB de iPhone
+## Aparência: fundo perolado, painel e faixa
 
-O celular atual é montado por código (geometria e materiais próprios). Para usar um modelo 3D pronto, ele precisa ter:
+| O que | Onde |
+| --- | --- |
+| Cores base (amarelo, grafite, tons de pérola e de tinta) e raios de borda | variáveis no topo de `src/styles.css` |
+| Painel perolado da hero | `.panel` em `src/styles.css` |
+| Faixa vertical amarelo e preto | `.band` em `src/styles.css` |
+| Grão do fundo (intensidade) | `opacity` de `.grain` em `src/styles.css` |
+| Seções com superfície perolada | classe `pearl` nas `<section>` do `index.html` |
 
-- licença que permita uso comercial e redistribuição do arquivo (por exemplo CC0 ou CC-BY, com o crédito exigido);
-- peças separadas e nomeadas: tela e vidro, estrutura, câmeras, bateria, placa principal e vidro traseiro;
-- materiais PBR e texturas em tamanho razoável (de preferência arquivo abaixo de 15 MB, comprimido).
+## Modelo 3D do iPhone
 
-Para conferir o que o arquivo tem, abra-o em https://gltf-viewer.donmccurdy.com e veja a árvore de nomes das peças. Guarde o arquivo em `public/models/` e passe a lista de nomes para integrar a `src/scene/phone.ts`. Não use o logotipo da Apple, e a loja não deve ser apresentada como autorizada pela fabricante.
+O celular atual é montado por código, com as proporções externas do iPhone 15 Pro. Ele é uma representação, não uma réplica técnica dos componentes internos.
+
+Para usar um modelo pronto, coloque um arquivo `iphone.glb` em `public/models/` e siga `public/models/LEIA-ME.md` (requisitos de licença e de peças, e como ligar os nomes das peças). Sem o arquivo, o site usa o modelo atual, sem erro.

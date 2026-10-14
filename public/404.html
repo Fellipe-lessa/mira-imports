@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Página não encontrada | Mira Imports</title>
+<style>
+  body{margin:0;min-height:100dvh;display:grid;place-items:center;background:#0d0c0a;color:#f4f1e8;font:400 17px/1.6 system-ui,sans-serif;text-align:center;padding:24px}
+  img{width:96px;height:96px;border-radius:50%;margin-bottom:24px}
+  h1{margin:0 0 8px;font-size:clamp(28px,6vw,44px)}
+  p{margin:0 0 28px;color:#b9b5a8}
+  a{display:inline-block;background:#fff200;color:#000;padding:13px 22px;border-radius:10px;font-weight:700;text-decoration:none}
+  a:focus-visible{outline:2px solid #fff;outline-offset:3px}
+</style>
+</head>
+<body>
+<main>
+  <img id="logo" alt="Logo da Mira Imports" width="96" height="96">
+  <h1>Página não encontrada</h1>
+  <p>O endereço que você abriu não existe neste site.</p>
+  <a id="voltar" href="/">Voltar para o início</a>
+</main>
+<script>
+  // Em GitHub Pages de projeto o site fica em /nome-do-repositorio/; em domínio próprio fica na raiz.
+  var seg = location.pathname.split("/")[1];
+  var base = location.hostname.endsWith("github.io") && seg ? "/" + seg + "/" : "/";
+  document.getElementById("voltar").href = base;
+  document.getElementById("logo").src = base + "logo.jpg";
+</script>
+</body>
+</html>
