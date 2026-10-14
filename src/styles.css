@@ -14,8 +14,8 @@ a{color:inherit}
 .btn:hover{transform:translateY(-2px)}.btn.g{background:transparent;color:var(--w);border-color:#555}.btn.g:hover{border-color:var(--y)}.btn.s{padding:8px 14px;font-size:13px;min-height:38px}
 canvas#gl{position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
 .word{position:fixed;left:50%;top:44%;transform:translate(-50%,-50%);z-index:0;font-weight:700;font-size:clamp(130px,36vw,560px);line-height:1;color:#ffffff09;-webkit-text-stroke:1px #ffffff1c;pointer-events:none;white-space:nowrap}
-header,main,footer,.word{transition:opacity 1s}
-.intro header,.intro main,.intro footer,.intro .word{opacity:0;pointer-events:none}
+header,main,footer,.word,.band{transition:opacity 1s}
+.intro header,.intro main,.intro footer,.intro .word,.intro .band{opacity:0;pointer-events:none}
 header{position:fixed;top:0;left:0;right:0;z-index:45;display:flex;align-items:center;gap:18px;padding:calc(10px + env(safe-area-inset-top,0px)) 5vw 10px;background:linear-gradient(#050505ee,#05050500)}
 #mb{width:46px;height:46px;border:1px solid #555;background:#0c0c0d;border-radius:4px;cursor:pointer;position:relative;flex:none}
 #mb span{position:absolute;left:12px;right:12px;height:2px;background:var(--w);transition:transform .3s,opacity .3s}
@@ -94,3 +94,37 @@ h1{font-size:clamp(40px,7vw,92px);letter-spacing:0}
 .fcol{flex:1 1 200px}.fcol h3{font-size:14px;color:var(--w);margin:0 0 10px}.fcol a{color:var(--m)}
 .wa-float{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:35;box-shadow:0 8px 24px #0009}
 .intro .wa-float{display:none}
+
+
+/* ===== Upgrade: faixa central, cantos, ritmo e microinterações ===== */
+:root{--r:12px;--r2:18px}
+.band{position:fixed;left:0;right:0;top:46%;height:clamp(230px,40vh,430px);transform:translateY(-50%);z-index:0;pointer-events:none;
+  background:radial-gradient(62% 130% at 68% 6%,#fff200b8,#fff20000 62%),radial-gradient(80% 140% at 28% 115%,#000000e6,#0000 70%),linear-gradient(100deg,#050505 0%,#6e6400 24%,#c4b700 52%,#7d7300 78%,#050505 100%);
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 24%,#000 76%,transparent);mask-image:linear-gradient(180deg,transparent,#000 24%,#000 76%,transparent)}
+.band:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,#fff0 0 38px,#ffffff12 40px,#fff0 46px);mix-blend-mode:soft-light;opacity:.55}
+.nogl .word,.nogl .band{display:none}
+.btn,#q,#mb{border-radius:var(--r)}
+.btn{position:relative;overflow:hidden}
+.btn:after{content:"";position:absolute;left:0;bottom:0;height:3px;width:100%;background:currentColor;transform:scaleX(0);transform-origin:left;transition:transform .35s}
+.btn:hover:after,.btn:focus-visible:after{transform:scaleX(1)}
+.card{border-radius:var(--r2);position:relative;overflow:hidden}
+.card>*{position:relative}
+.strip{border-radius:var(--r2);overflow:hidden}
+#lg li{border-radius:30px}
+.solid{padding:clamp(72px,10vw,120px) 5vw}
+#catalogo{border-radius:32px 32px 0 0;margin-top:-32px}
+.solid h2:before{content:"";display:block;width:44px;height:3px;border-radius:2px;background:var(--y);margin-bottom:18px}
+#servicos{background:#0a0a0a}#diferenciais{background:#0c0c0d}#sobre{background:#0e0e0f}#contato{background:#070707}
+.split{display:grid;grid-template-columns:1fr 1.2fr;gap:clamp(24px,6vw,90px);align-items:start}
+.split h2{margin:0}
+.row.col{flex-direction:column;align-items:stretch}.row.col .btn{text-align:center}
+.mark{display:block;position:relative;width:110px;height:110px;margin-top:26px;border:1px solid #fff2008c;border-radius:50%}
+.mark:before,.mark:after{content:"";position:absolute;background:var(--y);left:50%;top:50%}
+.mark:before{width:150%;height:1px;transform:translate(-50%,0)}.mark:after{width:1px;height:150%;transform:translate(0,-50%)}
+@media(max-width:760px){.split{grid-template-columns:1fr}}
+nav.top a:not(.btn){position:relative}
+nav.top a:not(.btn):after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:2px;background:var(--y);transform:scaleX(0);transform-origin:left;transition:transform .3s}
+nav.top a.act:after,nav.top a:not(.btn):hover:after{transform:scaleX(1)}
+nav.top a.act{color:var(--w)}
+.prog{position:fixed;top:0;left:0;right:0;height:2px;background:var(--y);transform:scaleX(0);transform-origin:left;z-index:55;pointer-events:none}
+@media(hover:hover){.card:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(260px circle at var(--mx,50%) var(--my,50%),#fff2001f,transparent 70%)}.card:hover:before{opacity:1}}

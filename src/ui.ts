@@ -82,4 +82,53 @@ export function initUI(): void {
   });
   drawChips();
   render();
+
+  // brilho amarelo que acompanha o cursor nos cards (só em dispositivos com mouse)
+  $("#grid").addEventListener("pointermove", (e) => {
+    const card = (e.target as HTMLElement).closest<HTMLElement>(".card");
+    if (!card) return;
+    const r = card.getBoundingClientRect();
+    card.style.setProperty("--mx", `${e.clientX - r.left}px`);
+    card.style.setProperty("--my", `${e.clientY - r.top}px`);
+  });
+
+  // barra de progresso da página
+  const prog = $(".prog");
+  let tick = false;
+  const atualiza = (): void => {
+    tick = false;
+    const max = document.documentElement.scrollHeight - innerHeight;
+    prog.style.transform = `scaleX(${max > 0 ? Math.min(1, scrollY / max) : 0})`;
+  };
+  addEventListener(
+    "scroll",
+    () => {
+      if (!tick) {
+        tick = true;
+        requestAnimationFrame(atualiza);
+      }
+    },
+    { passive: true },
+  );
+
+  // indicador amarelo da seção atual no menu
+  const links = $$<HTMLAnchorElement>("nav.top a:not(.btn)");
+  const io = new IntersectionObserver(
+    (itens) => {
+      itens.forEach((it) => {
+        if (!it.isIntersecting) return;
+        links.forEach((a) => {
+          const on = a.getAttribute("href") === `#${it.target.id}`;
+          a.classList.toggle("act", on);
+          if (on) a.setAttribute("aria-current", "true");
+          else a.removeAttribute("aria-current");
+        });
+      });
+    },
+    { rootMargin: "-45% 0px -50% 0px" },
+  );
+  ["inicio", "assistencia", "catalogo", "contato"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) io.observe(el);
+  });
 }

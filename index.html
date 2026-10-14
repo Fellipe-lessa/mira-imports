@@ -15,7 +15,9 @@
 </head>
 <body class="intro">
 <canvas id="gl" aria-hidden="true"></canvas>
+<div class="band" aria-hidden="true"></div>
 <div class="word" aria-hidden="true">MIRA</div>
+<div class="prog" aria-hidden="true"></div>
 
 <div id="intro" role="region" aria-label="Introdução">
   <button class="btn g skip" id="skip">PULAR INTRODUÇÃO</button>
@@ -85,7 +87,7 @@
     </div>
   </section>
 
-  <section class="solid" id="servicos" style="background:#0a0a0a">
+  <section class="solid" id="servicos">
     <div class="wrap">
       <h2>Serviços</h2>
       <div class="sv">
@@ -98,15 +100,19 @@
     </div>
   </section>
 
-  <section class="solid" id="diferenciais" style="background:#0c0c0d"><div class="wrap"><h2>Por que a Mira Imports</h2><div class="dif" id="dif"></div></div></section>
+  <section class="solid" id="diferenciais"><div class="wrap"><h2>Por que a Mira Imports</h2><div class="dif" id="dif"></div></div></section>
 
-  <section class="solid" id="sobre" style="background:#0e0e0f">
-    <div class="wrap"><h2>Sobre a loja</h2><p class="m" style="max-width:60ch">Texto institucional a ser preenchido pela Mira Imports: história, atendimento e diferenciais reais da loja.</p></div>
+  <section class="solid" id="sobre">
+    <div class="wrap split">
+      <h2>Sobre a loja</h2>
+      <div><p class="m" style="max-width:56ch">Texto institucional a ser preenchido pela Mira Imports: história, atendimento e diferenciais reais da loja.</p><span class="mark" aria-hidden="true"></span></div>
+    </div>
   </section>
 
-  <section class="solid" id="contato" style="background:#070707">
-    <div class="wrap"><h2>Fale com a loja.</h2><p class="m">Os botões abrem o WhatsApp com uma mensagem pronta para cada assunto.</p>
-      <div class="row"><a class="btn" data-wa="Olá! Quero falar com a loja.">FALAR COM A LOJA</a><a class="btn g" data-wa="Olá! Quero consultar um produto.">CONSULTAR UM PRODUTO</a><a class="btn g" data-wa="Olá! Preciso de assistência técnica.">PRECISO DE ASSISTÊNCIA</a></div>
+  <section class="solid" id="contato">
+    <div class="wrap split">
+      <div><h2>Fale com a loja.</h2><p class="m">Os botões abrem o WhatsApp com uma mensagem pronta para cada assunto.</p></div>
+      <div class="row col"><a class="btn" data-wa="Olá! Quero falar com a loja.">FALAR COM A LOJA</a><a class="btn g" data-wa="Olá! Quero consultar um produto.">CONSULTAR UM PRODUTO</a><a class="btn g" data-wa="Olá! Preciso de assistência técnica.">PRECISO DE ASSISTÊNCIA</a></div>
     </div>
   </section>
 </main>

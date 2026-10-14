@@ -29,6 +29,7 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
   const introEl = document.querySelector<HTMLElement>("#intro")!;
   const exEl = document.querySelector<HTMLElement>("#assistencia")!;
   const word = document.querySelector<HTMLElement>(".word")!;
+  const band = document.querySelector<HTMLElement>(".band")!;
   const lgEl = document.querySelector<HTMLElement>("#lg")!;
   const stages = [...document.querySelectorAll<HTMLElement>(".st")];
   const legend = [...document.querySelectorAll<HTMLElement>("#lg li")];
@@ -118,7 +119,9 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
     const idle = RM ? 0 : Math.sin(t * 0.5) * 0.3 + mx * 0.4;
     phone.rotation.y = idle * (1 - 0.7 * a) - 0.8 * a + sm(E, 0.9, 1) * 6.283;
     phone.rotation.x = 0.14 * a + (RM ? 0 : my * 0.12);
-    word.style.opacity = String(clamp(1 - scrollY / (innerHeight * 0.8)));
+    const fade = String(clamp(1 - scrollY / (innerHeight * 0.8)));
+    word.style.opacity = fade;
+    band.style.opacity = fade;
     stages.forEach((s, i) => {
       const o = clamp(Math.min((E - STAGES[i][0]) / 0.04, (STAGES[i][1] - E) / 0.04));
       s.style.opacity = String(o);
