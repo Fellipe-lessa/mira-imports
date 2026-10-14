@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { clamp, sm } from "./helpers";
 import { buildPhone } from "./phone";
+import { MODELO_ARQUIVO } from "./modelo.config";
 import { createIntro, INTRO_DISSOLVE, INTRO_END } from "./intro";
 
 function loadImage(src: string): Promise<HTMLImageElement> {
@@ -12,12 +13,12 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-/** Rótulos técnicos: peça (índice em parts) e janela de rolagem em que ficam visíveis. */
-const TAGS: { part: number; w: [number, number] }[] = [
-  { part: 0, w: [0.3, 0.4] }, // tela
-  { part: 5, w: [0.4, 0.5] }, // câmeras
-  { part: 4, w: [0.5, 0.6] }, // bateria
-  { part: 2, w: [0.6, 0.7] }, // placa principal
+/** Rótulos técnicos: nome da peça (propriedade name em parts) e janela de rolagem em que ficam visíveis. */
+const TAGS: { part: string; w: [number, number] }[] = [
+  { part: "tela", w: [0.3, 0.4] },
+  { part: "cam", w: [0.4, 0.5] },
+  { part: "bateria", w: [0.5, 0.6] },
+  { part: "placa", w: [0.6, 0.7] },
 ];
 
 /** Intervalos (progresso da seção de assistência) em que cada texto fica visível. */
@@ -69,7 +70,8 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
 
   const tex = new THREE.TextureLoader().load(logoUrl);
   tex.encoding = THREE.sRGBEncoding;
-  const { phone, parts } = buildPhone(S, R, logoUrl);
+  let { phone, parts } = buildPhone(S, R, logoUrl);
+  const parte = (nome: string): THREE.Object3D | undefined => parts.find((p) => p.name === nome);
   const intro = createIntro(tex, img, mob);
   S.add(intro.group);
 
@@ -91,6 +93,35 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
   function revealHome(): void {
     document.body.classList.remove("intro");
     phone.visible = true;
+  }
+
+  function disposeTree(o: THREE.Object3D): void {
+    o.traverse((n) => {
+      const m = n as THREE.Mesh;
+      m.geometry?.dispose();
+      const mt = m.material;
+      if (mt) (Array.isArray(mt) ? mt : [mt]).forEach((q) => q.dispose());
+    });
+  }
+
+  /** Se existir public/models/iphone.glb com as peças mínimas, troca o modelo procedural por ele. */
+  async function modeloExterno(): Promise<void> {
+    try {
+      const url = `${import.meta.env.BASE_URL}${MODELO_ARQUIVO}`;
+      const head = await fetch(url, { method: "HEAD" });
+      if (!head.ok || (head.headers.get("content-type") ?? "").includes("text/html")) return;
+      const { carregarModelo } = await import("./model");
+      const rig = await carregarModelo(url, logoUrl);
+      if (!rig) return;
+      rig.phone.visible = phone.visible;
+      S.remove(phone);
+      disposeTree(phone);
+      S.add(rig.phone);
+      phone = rig.phone;
+      parts = rig.parts;
+    } catch (e) {
+      console.warn("Modelo GLB não usado:", e);
+    }
   }
 
   function endIntro(): void {
@@ -143,7 +174,9 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
     let cw = 0;
     TAGS.forEach((tg, i) => {
       const w = win(i);
-      parts[tg.part].getWorldPosition(v3);
+      const p = parte(tg.part);
+      if (!p) return;
+      p.getWorldPosition(v3);
       cx += v3.x * w;
       cy += v3.y * w;
       cw += w;
@@ -165,8 +198,9 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
     C.updateMatrixWorld();
     TAGS.forEach((tg, i) => {
       const el = tags[i];
-      if (!el) return;
-      parts[tg.part].getWorldPosition(v3).project(C);
+      const p = parte(tg.part);
+      if (!el || !p) return;
+      p.getWorldPosition(v3).project(C);
       el.style.opacity = String(win(i));
       el.style.transform = `translate(${((v3.x + 1) / 2) * innerWidth}px, ${((1 - v3.y) / 2) * innerHeight}px)`;
     });
@@ -222,6 +256,7 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
     /* sem sessionStorage */
   }
   resize();
+  void modeloExterno();
   if (skip) endIntro();
   requestAnimationFrame(loop);
   return true;

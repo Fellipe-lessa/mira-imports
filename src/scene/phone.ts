@@ -2,32 +2,54 @@ import * as THREE from "three";
 
 export interface PhoneRig {
   phone: THREE.Group;
-  /** Peças que se afastam na vista explodida (userData: z de repouso e deslocamento). */
+  /** Peças que se afastam na vista explodida (userData: z de repouso e deslocamento). Cada uma tem `name`. */
   parts: THREE.Object3D[];
 }
 
-/** Retângulo com cantos arredondados. */
+/**
+ * Retângulo com cantos de curvatura contínua (os cantos do iPhone não são arcos de círculo).
+ * Quanto menor `c` em relação a `k`, mais "squircle" fica o canto.
+ */
 function rr(w: number, h: number, r: number): THREE.Shape {
   const s = new THREE.Shape();
   const x = -w / 2;
   const y = -h / 2;
-  s.moveTo(x + r, y);
-  s.lineTo(x + w - r, y);
-  s.quadraticCurveTo(x + w, y, x + w, y + r);
-  s.lineTo(x + w, y + h - r);
-  s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  s.lineTo(x + r, y + h);
-  s.quadraticCurveTo(x, y + h, x, y + h - r);
-  s.lineTo(x, y + r);
-  s.quadraticCurveTo(x, y, x + r, y);
+  const k = Math.min(r * 1.25, w / 2, h / 2);
+  const c = k * 0.28;
+  s.moveTo(x + k, y);
+  s.lineTo(x + w - k, y);
+  s.bezierCurveTo(x + w - c, y, x + w, y + c, x + w, y + k);
+  s.lineTo(x + w, y + h - k);
+  s.bezierCurveTo(x + w, y + h - c, x + w - c, y + h, x + w - k, y + h);
+  s.lineTo(x + k, y + h);
+  s.bezierCurveTo(x + c, y + h, x, y + h - c, x, y + h - k);
+  s.lineTo(x, y + k);
+  s.bezierCurveTo(x, y + c, x + c, y, x + k, y);
   return s;
 }
 
-function slab(w: number, h: number, r: number, d: number, m: THREE.Material): THREE.Mesh {
-  const g = new THREE.ExtrudeGeometry(rr(w, h, r), { depth: d, bevelEnabled: false, curveSegments: 8 });
+const rect = (cx: number, cy: number, w: number, h: number): THREE.Path => {
+  const p = new THREE.Path();
+  p.moveTo(cx - w / 2, cy - h / 2);
+  p.lineTo(cx + w / 2, cy - h / 2);
+  p.lineTo(cx + w / 2, cy + h / 2);
+  p.lineTo(cx - w / 2, cy + h / 2);
+  p.closePath();
+  return p;
+};
+
+/** Placa extrudada com cantos arredondados e furos opcionais. */
+function slab(w: number, h: number, r: number, d: number, m: THREE.Material, holes: THREE.Path[] = []): THREE.Mesh {
+  const s = rr(w, h, r);
+  s.holes.push(...holes);
+  const g = new THREE.ExtrudeGeometry(s, { depth: d, bevelEnabled: false, curveSegments: 10 });
   g.translate(0, 0, -d / 2);
   return new THREE.Mesh(g, m);
 }
+
+/** Aro vazado (moldura fina). */
+const ring = (w: number, h: number, r: number, d: number, hl: number, m: THREE.Material): THREE.Mesh =>
+  slab(w, h, r, d, m, [rr(w - hl, h - hl, Math.max(r - hl / 2, 0.01))]);
 
 const box = (w: number, h: number, d: number, m: THREE.Material): THREE.Mesh =>
   new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
@@ -40,6 +62,7 @@ function rrPlane(w: number, h: number, r: number): THREE.ShapeGeometry {
   return g;
 }
 
+/** Moldura de titânio com chanfro, vazada no centro. */
 function frameGeo(w: number, h: number, r: number, d: number, hl: number): THREE.ExtrudeGeometry {
   const b = 0.008;
   const s = rr(w - 2 * b, h - 2 * b, r - b);
@@ -50,8 +73,8 @@ function frameGeo(w: number, h: number, r: number, d: number, hl: number): THREE
     bevelEnabled: true,
     bevelThickness: b,
     bevelSize: b,
-    bevelSegments: 4,
-    curveSegments: 10,
+    bevelSegments: 5,
+    curveSegments: 12,
   });
   g.translate(0, 0, -t / 2);
   return g;
@@ -69,7 +92,7 @@ function noiseTex(w: number, h: number, draw: (x: CanvasRenderingContext2D) => v
   return t;
 }
 
-/** Textura de rugosidade do titânio escovado. */
+/** Rugosidade do titânio escovado. */
 const brushTex = (): THREE.CanvasTexture =>
   noiseTex(256, 256, (x) => {
     x.fillStyle = "#999";
@@ -81,7 +104,7 @@ const brushTex = (): THREE.CanvasTexture =>
     }
   }, 3);
 
-/** Textura de rugosidade do vidro fosco traseiro. */
+/** Rugosidade do vidro fosco traseiro. */
 const grainTex = (): THREE.CanvasTexture =>
   noiseTex(128, 128, (x) => {
     x.fillStyle = "#bbb";
@@ -132,7 +155,7 @@ function screw(m: THREE.Material, d: THREE.Material): THREE.Group {
 }
 
 /** Ambiente de estúdio desenhado em canvas, usado nos reflexos do metal e do vidro. */
-function makeEnv(R: THREE.WebGLRenderer): THREE.Texture {
+export function makeEnv(R: THREE.WebGLRenderer): THREE.Texture {
   const c = document.createElement("canvas");
   c.width = 1024;
   c.height = 512;
@@ -159,7 +182,7 @@ function makeEnv(R: THREE.WebGLRenderer): THREE.Texture {
   return e;
 }
 
-/** Tela de bloqueio: a logo da loja como papel de parede, com data e hora reais. */
+/** Tela de bloqueio: papel de parede escuro com a logo da loja, data e hora reais. */
 function screenTex(img: HTMLImageElement): THREE.CanvasTexture {
   const c = document.createElement("canvas");
   c.width = 512;
@@ -177,32 +200,47 @@ function screenTex(img: HTMLImageElement): THREE.CanvasTexture {
     x.fill();
   };
   function draw(): void {
-    x.fillStyle = "#FEF200";
+    const bg = x.createRadialGradient(256, 560, 40, 256, 560, 640);
+    bg.addColorStop(0, "#2a271c");
+    bg.addColorStop(1, "#070706");
+    x.fillStyle = bg;
+    x.fillRect(0, 0, 512, 1092);
+    const glow = x.createRadialGradient(256, 560, 80, 256, 560, 330);
+    glow.addColorStop(0, "rgba(255,242,0,.22)");
+    glow.addColorStop(1, "rgba(255,242,0,0)");
+    x.fillStyle = glow;
     x.fillRect(0, 0, 512, 1092);
     if (img.naturalWidth) {
+      x.save();
+      x.beginPath();
+      x.arc(256, 560, 170, 0, Math.PI * 2);
+      x.clip();
       x.imageSmoothingQuality = "high";
-      x.drawImage(img, 0, 300, 512, 512);
+      x.drawImage(img, 86, 390, 340, 340);
+      x.restore();
     }
     const d = new Date();
     x.textAlign = "center";
-    x.fillStyle = "#111";
+    x.fillStyle = "#cfcabb";
     x.font = "500 30px system-ui,sans-serif";
     x.fillText(d.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }), 256, 150);
+    x.fillStyle = "#f4f1e8";
     x.font = "600 172px system-ui,sans-serif";
     x.fillText(String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"), 256, 300);
     pill(256, 48, 178, 50, "#000");
+    x.fillStyle = "#f4f1e8";
     for (let i = 0; i < 4; i++) x.fillRect(66 + i * 10, 48 - i * 4, 7, 6 + i * 4);
-    x.strokeStyle = "#111";
+    x.strokeStyle = "#f4f1e8";
     x.lineWidth = 2;
     x.strokeRect(420, 38, 34, 16);
     x.fillRect(423, 41, 24, 10);
-    x.fillStyle = "rgba(17,17,17,.6)";
+    x.fillStyle = "rgba(255,255,255,.16)";
     [78, 434].forEach((cx) => {
       x.beginPath();
       x.arc(cx, 990, 38, 0, 6.283);
       x.fill();
     });
-    x.fillStyle = "#fff";
+    x.fillStyle = "#f4f1e8";
     x.fillRect(70, 972, 16, 10);
     x.fillRect(73, 982, 10, 20);
     x.fillRect(420, 978, 28, 20);
@@ -210,7 +248,7 @@ function screenTex(img: HTMLImageElement): THREE.CanvasTexture {
     x.beginPath();
     x.arc(434, 988, 6, 0, 6.283);
     x.fill();
-    pill(256, 1062, 176, 8, "#111");
+    pill(256, 1062, 176, 8, "#f4f1e8");
     t.needsUpdate = true;
   }
   draw();
@@ -219,6 +257,18 @@ function screenTex(img: HTMLImageElement): THREE.CanvasTexture {
   return t;
 }
 
+/** Plano com a tela de bloqueio da loja, no tamanho w x h (usado no modelo procedural e no GLB). */
+export function lockScreenMesh(w: number, h: number, r: number, logoUrl: string): THREE.Mesh {
+  const img = new Image();
+  img.src = logoUrl;
+  return new THREE.Mesh(rrPlane(w, h, r), new THREE.MeshBasicMaterial({ map: screenTex(img), toneMapped: false }));
+}
+
+/**
+ * iPhone procedural. Proporções externas do iPhone 15 Pro (70,6 x 146,6 x 8,25 mm) na escala 1,07
+ * (1 unidade = 9,3 cm). Não é uma réplica técnica: a posição e o formato dos componentes internos
+ * são representativos, e é por isso que existe a opção de carregar um modelo GLB (ver model.ts).
+ */
 export function buildPhone(S: THREE.Scene, R: THREE.WebGLRenderer, logoUrl: string): PhoneRig {
   const phone = new THREE.Group();
   phone.visible = false;
@@ -228,31 +278,35 @@ export function buildPhone(S: THREE.Scene, R: THREE.WebGLRenderer, logoUrl: stri
   } catch {
     /* sem reflexos de ambiente, a cena continua funcionando */
   }
-  const img = new Image();
-  img.src = logoUrl;
 
   const M = (c: number, m: number, r: number, o: THREE.MeshStandardMaterialParameters = {}): THREE.MeshStandardMaterial =>
     new THREE.MeshStandardMaterial({ color: c, metalness: m, roughness: r, ...o });
-  const ti = M(0x3a3a3e, 1, 0.55, { roughnessMap: brushTex() });
-  const dk = M(0x151517, 0.5, 0.5);
-  const glass = M(0x020203, 0.2, 0.06);
+  const ti = M(0x2c2c30, 1, 0.5, { roughnessMap: brushTex(), envMapIntensity: 1.3 });
+  const tiLight = M(0x6a6a70, 1, 0.35);
+  const glass = M(0x020203, 0.1, 0.05);
+  const oled = M(0x050506, 0.2, 0.4);
   const al = M(0xb9bcc2, 0.9, 0.4);
   const pcb = M(0xffffff, 0.3, 0.6, { map: pcbTex() });
   const cu = M(0xb87333, 0.9, 0.35);
   const bk = M(0x000000, 0, 0.3);
   const wh = M(0xdddddd, 0, 0.8);
+  const dk = M(0x151517, 0.5, 0.5);
+  const lensGlass = new THREE.MeshPhysicalMaterial({ color: 0x06060c, metalness: 0, roughness: 0.03, clearcoat: 1, clearcoatRoughness: 0.02 });
   const frost = new THREE.MeshPhysicalMaterial({
-    color: 0x2d2d30,
+    color: 0x242427,
     roughness: 0.8,
     roughnessMap: grainTex(),
-    metalness: 0.15,
-    clearcoat: 0.25,
-    clearcoatRoughness: 0.5,
+    metalness: 0.12,
+    clearcoat: 0.15,
+    clearcoatRoughness: 0.6,
   });
-  const W = 0.75;
+  const gloss = new THREE.MeshPhysicalMaterial({ color: 0x2a2a2e, roughness: 0.22, metalness: 0.1, clearcoat: 0.8, clearcoatRoughness: 0.12 });
+
+  const W = 0.756;
   const H = 1.57;
-  const D = 0.082;
-  const put = (o: THREE.Object3D, z: number, off: number): THREE.Object3D => {
+  const D = 0.088;
+  const put = (name: string, o: THREE.Object3D, z: number, off: number): THREE.Object3D => {
+    o.name = name;
     o.position.z = z;
     o.userData = { z, o: off };
     parts.push(o);
@@ -260,45 +314,74 @@ export function buildPhone(S: THREE.Scene, R: THREE.WebGLRenderer, logoUrl: stri
     return o;
   };
   const disc = (r: number, z: number, m: THREE.Material): THREE.Mesh => {
-    const d = new THREE.Mesh(new THREE.CircleGeometry(r, 24).rotateY(Math.PI), m);
+    const d = new THREE.Mesh(new THREE.CircleGeometry(r, 28).rotateY(Math.PI), m);
     d.position.z = z;
     return d;
   };
 
-  // tela ligada, com a tela de bloqueio da loja
+  // ---- tela: vidro, painel OLED, placa traseira e flex ----
   const tela = new THREE.Group();
-  tela.add(slab(W - 0.01, H - 0.01, 0.108, 0.012, glass));
-  const sc = new THREE.Mesh(
-    rrPlane(W - 0.04, H - 0.04, 0.092),
-    new THREE.MeshBasicMaterial({ map: screenTex(img), toneMapped: false }),
-  );
+  tela.add(slab(W - 0.012, H - 0.012, 0.112, 0.012, glass));
+  const sw = W - 0.044;
+  const sh = H - 0.044;
+  const sc = lockScreenMesh(sw, sh, 0.095, logoUrl);
   sc.position.z = 0.0065;
   tela.add(sc);
-  const sh = new THREE.Mesh(
-    rrPlane(W - 0.04, H - 0.04, 0.092),
+  const shine = new THREE.Mesh(
+    rrPlane(sw, sh, 0.095),
     M(0, 0, 0.04, { transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }),
   );
-  sh.position.z = 0.0072;
-  tela.add(sh);
-  const bp = slab(W - 0.05, H - 0.05, 0.09, 0.006, al);
-  bp.position.z = -0.01;
+  shine.position.z = 0.0072;
+  tela.add(shine);
+  const cam0 = disc(0.011, 0.0074, M(0x0a0a1a, 0, 0.1));
+  cam0.position.set(0.075, sh / 2 - (48 / 1092) * sh, 0.0074);
+  tela.add(cam0);
+  const panel = slab(W - 0.04, H - 0.04, 0.1, 0.008, oled);
+  panel.position.z = -0.007;
+  tela.add(panel);
+  const bp = slab(W - 0.06, H - 0.06, 0.09, 0.006, al);
+  bp.position.z = -0.013;
   tela.add(bp);
-  const fx = box(0.18, 0.05, 0.004, cu);
-  fx.position.set(0, -0.7, -0.015);
-  tela.add(fx);
-  put(tela, 0.042, 1.3);
+  const flex = new THREE.Mesh(
+    new THREE.TubeGeometry(
+      new THREE.CatmullRomCurve3([new THREE.Vector3(0, -0.7, -0.016), new THREE.Vector3(0, -0.78, -0.03), new THREE.Vector3(0.02, -0.8, -0.07)]),
+      12,
+      0.02,
+      6,
+      false,
+    ),
+    cu,
+  );
+  flex.scale.set(3, 1, 0.15);
+  tela.add(flex);
+  put("tela", tela, 0.04, 1.45);
 
-  // estrutura em titânio, botões, USB-C e alto-falantes
+  // ---- estrutura: moldura de titânio, botões, USB-C, alto-falantes e placa intermediária ----
   const fr = new THREE.Group();
   fr.add(new THREE.Mesh(frameGeo(W, H, 0.115, D, 0.03), ti));
-  ([[-1, 0.56, 0.04], [-1, 0.44, 0.07], [-1, 0.31, 0.07], [1, 0.42, 0.13]] as const).forEach(([s, y, h]) => {
-    const b = box(0.012, h, 0.016, ti);
+  const side = (s: number, y: number, len: number): void => {
+    const b = slab(0.016, len, 0.007, 0.014, ti);
+    b.rotation.y = Math.PI / 2;
     b.position.set(s * (W / 2 + 0.002), y, 0);
     fr.add(b);
-  });
-  const pt = box(0.1, 0.01, 0.02, bk);
-  pt.position.set(0, -H / 2, 0);
-  fr.add(pt);
+  };
+  side(-1, 0.56, 0.04); // botão de ação
+  side(-1, 0.44, 0.07); // volume
+  side(-1, 0.31, 0.07);
+  side(1, 0.42, 0.13); // botão lateral
+  for (const sx of [-1, 1]) {
+    for (const sy of [-1, 1]) {
+      const a = box(0.004, 0.01, D - 0.012, bk);
+      a.position.set(sx * (W / 2 + 0.0005), sy * 0.62, 0);
+      fr.add(a);
+      const b = box(0.01, 0.004, D - 0.012, bk);
+      b.position.set(sx * 0.22, sy * (H / 2 + 0.0005), 0);
+      fr.add(b);
+    }
+  }
+  const usb = box(0.1, 0.014, 0.028, bk);
+  usb.position.set(0, -H / 2 + 0.001, 0);
+  fr.add(usb);
   for (let i = 0; i < 6; i++) {
     for (const s of [-1, 1]) {
       const h = new THREE.Mesh(new THREE.CylinderGeometry(0.0065, 0.0065, 0.01, 10), bk);
@@ -307,45 +390,59 @@ export function buildPhone(S: THREE.Scene, R: THREE.WebGLRenderer, logoUrl: stri
     }
   }
   for (const s of [-1, 1]) {
-    const p = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.01, 12), bk);
-    p.position.set(s * 0.1, -H / 2 + 0.001, 0);
-    fr.add(p);
+    const mic = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.005, 0.01, 10), bk);
+    mic.position.set(s * 0.1, -H / 2 + 0.002, 0);
+    fr.add(mic);
   }
-  put(fr, 0, 0);
+  const plate = slab(W - 0.07, 0.965, 0.085, 0.006, tiLight, [rect(0, 0.0575, 0.55, 0.82)]);
+  plate.position.set(0, -0.2575, -0.03);
+  fr.add(plate);
+  put("frame", fr, 0, 0);
 
-  // placa principal
+  // ---- placa principal ----
   const bd = new THREE.Group();
-  bd.add(slab(0.6, 0.44, 0.03, 0.014, pcb));
-  ([[-0.17, 0.07, 0.2, 0.14], [0.12, 0.07, 0.22, 0.14], [-0.1, -0.11, 0.26, 0.1], [0.2, -0.1, 0.1, 0.1]] as const).forEach(
-    ([x, y, w, h]) => {
-      const c = box(w, h, 0.012, al);
-      c.position.set(x, y, 0.013);
-      bd.add(c);
-    },
-  );
+  bd.add(slab(0.62, 0.46, 0.03, 0.014, pcb));
+  ([[-0.17, 0.07, 0.2, 0.14], [0.12, 0.07, 0.22, 0.14], [-0.1, -0.11, 0.26, 0.1], [0.2, -0.1, 0.1, 0.1]] as const).forEach(([x, y, w, h]) => {
+    const c = box(w, h, 0.012, al);
+    c.position.set(x, y, 0.013);
+    bd.add(c);
+  });
+  const soc = box(0.11, 0.11, 0.012, dk);
+  soc.position.set(0.12, 0.07, 0.025);
+  bd.add(soc);
   const cn = box(0.08, 0.03, 0.008, cu);
   cn.position.set(0, -0.2, 0.011);
   bd.add(cn);
-  for (const [x, y] of [[-0.28, 0.2], [0.28, 0.2], [-0.28, -0.2], [0.28, -0.2]] as const) {
-    const sw = screw(al, bk);
-    sw.position.set(x, y, 0.01);
-    bd.add(sw);
+  for (const [x, y] of [[-0.29, 0.2], [0.29, 0.2], [-0.29, -0.2], [0.29, -0.2]] as const) {
+    const s = screw(al, bk);
+    s.position.set(x, y, 0.01);
+    bd.add(s);
   }
   bd.position.set(0, 0.46, 0);
-  put(bd, -0.012, -0.55);
+  put("placa", bd, -0.012, -0.6);
 
-  // taptic engine
+  // ---- taptic engine e alto-falante ----
   const tp = new THREE.Group();
-  tp.add(box(0.22, 0.1, 0.03, dk));
+  tp.add(box(0.22, 0.1, 0.018, dk));
   const tc = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.01, 16).rotateX(Math.PI / 2), al);
-  tc.position.z = 0.018;
+  tc.position.z = 0.012;
   tp.add(tc);
-  tp.position.set(0.18, -0.66, 0);
-  put(tp, -0.02, -0.7);
+  tp.position.set(0.2, -0.67, 0);
+  put("taptic", tp, -0.014, -0.6);
 
-  // bateria com abas adesivas
+  const sp = new THREE.Group();
+  sp.add(box(0.2, 0.1, 0.018, M(0x232327, 0.4, 0.5)));
+  for (let i = -2; i <= 2; i++) {
+    const g = box(0.012, 0.07, 0.004, bk);
+    g.position.set(i * 0.03, 0, 0.011);
+    sp.add(g);
+  }
+  sp.position.set(-0.2, -0.67, 0);
+  put("falante", sp, -0.014, -0.6);
+
+  // ---- bateria com abas adesivas, suporte e conector ----
   const bt = new THREE.Group();
-  bt.add(box(0.52, 0.8, 0.026, al));
+  bt.add(slab(0.52, 0.8, 0.045, 0.026, al));
   const lb = box(0.3, 0.16, 0.002, dk);
   lb.position.set(0, 0.1, 0.014);
   bt.add(lb);
@@ -358,56 +455,69 @@ export function buildPhone(S: THREE.Scene, R: THREE.WebGLRenderer, logoUrl: stri
   br.position.set(0, 0.34, 0.015);
   bt.add(br);
   for (const x of [-0.2, 0.2]) {
-    const sw = screw(al, bk);
-    sw.position.set(x, 0.34, 0.017);
-    bt.add(sw);
+    const s = screw(al, bk);
+    s.position.set(x, 0.34, 0.017);
+    bt.add(s);
   }
   const bc = box(0.12, 0.03, 0.006, cu);
   bc.position.set(0, 0.42, 0);
   bt.add(bc);
   bt.position.set(0, -0.2, 0);
-  put(bt, -0.02, -0.85);
+  put("bateria", bt, -0.02, -0.95);
 
-  // módulo de câmeras: três lentes
+  // ---- módulo de câmeras: três lentes com anel, vidro e cúpula ----
   const cam = new THREE.Group();
-  cam.add(slab(0.37, 0.37, 0.07, 0.016, al));
-  ([[-0.075, 0.075], [-0.075, -0.075], [0.075, 0]] as const).forEach(([x, y]) => {
-    const g = new THREE.Group();
-    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.026, 28).rotateX(Math.PI / 2), ti));
-    g.add(disc(0.056, -0.0135, glass));
-    g.add(disc(0.03, -0.0142, M(0x1c1238, 0.3, 0.1)));
-    g.position.set(x, y, -0.02);
-    cam.add(g);
-  });
+  cam.add(slab(0.38, 0.38, 0.07, 0.018, al));
   const shield = box(0.3, 0.3, 0.004, dk);
-  shield.position.z = 0.0095;
+  shield.position.z = 0.0105;
   cam.add(shield);
   for (const [x, y] of [[-0.15, 0.15], [0.15, -0.15]] as const) {
-    const sw = screw(al, bk);
-    sw.position.set(x, y, 0.0115);
-    cam.add(sw);
+    const s = screw(al, bk);
+    s.position.set(x, y, 0.0125);
+    cam.add(s);
   }
-  cam.position.set(-0.19, 0.55, 0);
-  put(cam, -0.028, -1.15);
+  ([[-0.09, 0.09], [-0.09, -0.09], [0.075, 0]] as const).forEach(([x, y]) => {
+    const g = new THREE.Group();
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.072, 0.072, 0.026, 32).rotateX(Math.PI / 2), tiLight).translateZ(-0.022));
+    const rg = new THREE.Mesh(new THREE.TorusGeometry(0.058, 0.006, 8, 36), al);
+    rg.position.z = -0.035;
+    g.add(rg, disc(0.052, -0.0353, lensGlass), disc(0.03, -0.0357, M(0x1c1238, 0.3, 0.1)));
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(0.06, 28, 12, 0, Math.PI * 2, 0, 0.5).rotateX(-Math.PI / 2), lensGlass);
+    dome.position.z = 0.0171;
+    g.add(dome);
+    g.position.set(x, y, 0);
+    cam.add(g);
+  });
+  cam.position.set(-0.16, 0.55, 0);
+  put("cam", cam, -0.032, -1.3);
 
-  // vidro traseiro fosco com plateau, flash, LiDAR e bobina de carga
+  // ---- vidro traseiro fosco: plateau das câmeras, flash, LiDAR, microfone e bobina de carga ----
   const back = new THREE.Group();
-  back.add(slab(W - 0.015, H - 0.015, 0.108, 0.01, frost));
-  const pl = slab(0.37, 0.37, 0.07, 0.014, frost);
-  pl.position.set(-0.19, 0.55, -0.012);
+  back.add(slab(W - 0.016, H - 0.016, 0.112, 0.01, frost));
+  const pl = slab(0.4, 0.4, 0.082, 0.016, gloss);
+  pl.position.set(-0.16, 0.55, -0.013);
   back.add(pl);
-  const fl = disc(0.02, -0.0195, M(0xf2efe6, 0, 0.4));
-  fl.position.set(-0.09, 0.67, -0.0195);
+  const pr = ring(0.408, 0.408, 0.086, 0.02, 0.016, tiLight);
+  pr.position.set(-0.16, 0.55, -0.013);
+  back.add(pr);
+  const fl = disc(0.02, -0.0215, M(0xf2efe6, 0, 0.4));
+  fl.position.set(-0.02, 0.68, -0.0215);
   back.add(fl);
-  const ld = disc(0.03, -0.0195, bk);
-  ld.position.set(-0.09, 0.43, -0.0195);
+  const ld = disc(0.028, -0.0215, bk);
+  ld.position.set(-0.02, 0.42, -0.0215);
   back.add(ld);
+  const mc = disc(0.006, -0.0215, bk);
+  mc.position.set(-0.01, 0.55, -0.0215);
+  back.add(mc);
   for (const r of [0.17, 0.135, 0.1]) {
     const t = new THREE.Mesh(new THREE.TorusGeometry(r, 0.006, 6, 48), cu);
-    t.position.set(0, -0.15, 0.008);
+    t.position.set(0, -0.12, 0.0075);
     back.add(t);
   }
-  put(back, -0.039, -1.6);
+  const mag = new THREE.Mesh(new THREE.TorusGeometry(0.27, 0.008, 6, 64), tiLight);
+  mag.position.set(0, -0.12, 0.0075);
+  back.add(mag);
+  put("back", back, -0.042, -1.8);
 
   S.add(phone);
   return { phone, parts };
