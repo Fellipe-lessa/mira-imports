@@ -71,8 +71,7 @@ footer .brand{color:var(--w)}footer p{margin:0 0 4px}
 .skip{position:absolute;right:5vw;top:calc(18px + env(safe-area-inset-top,0px))}
 .itx{position:absolute;left:0;right:0;bottom:11vh;text-align:center;padding:0 5vw}
 #tg{font:700 clamp(16px,3.4vw,28px) "Chakra Petch",sans-serif;letter-spacing:.14em;margin-bottom:22px;opacity:0;transition:opacity .9s}
-#enter{opacity:0;pointer-events:none;transition:opacity .9s}
-#intro.tg #tg,#intro.en #enter{opacity:1}#intro.en #enter{pointer-events:auto}
+#intro.tg #tg{opacity:1}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 
 /* ===== Refinamentos da versão do projeto ===== */

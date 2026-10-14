@@ -1,7 +1,16 @@
 import * as THREE from "three";
 import { clamp, sm } from "./helpers";
 import { buildPhone } from "./phone";
-import { createIntro } from "./intro";
+import { createIntro, INTRO_DISSOLVE, INTRO_END } from "./intro";
+
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((ok, fail) => {
+    const i = new Image();
+    i.onload = () => ok(i);
+    i.onerror = fail;
+    i.src = src;
+  });
+}
 
 /** Intervalos (progresso da seção de assistência) em que cada texto fica visível. */
 const STAGES: [number, number][] = [[-1, 0.2], [0.2, 0.46], [0.46, 0.7], [0.7, 0.88], [0.88, 2]];
@@ -15,7 +24,7 @@ function createRenderer(canvas: HTMLCanvasElement, mob: boolean): THREE.WebGLRen
 }
 
 /** Inicia a abertura e a cena do celular. Retorna false se o WebGL não estiver disponível. */
-export function startExperience(logoUrl: string): boolean {
+export async function startExperience(logoUrl: string): Promise<boolean> {
   const canvas = document.querySelector<HTMLCanvasElement>("#gl")!;
   const introEl = document.querySelector<HTMLElement>("#intro")!;
   const exEl = document.querySelector<HTMLElement>("#assistencia")!;
@@ -28,6 +37,8 @@ export function startExperience(logoUrl: string): boolean {
 
   const R = createRenderer(canvas, mob);
   if (!R) return false;
+  const img = await loadImage(logoUrl).catch(() => null);
+  if (!img) return false;
 
   const S = new THREE.Scene();
   const C = new THREE.PerspectiveCamera(35, 1, 0.1, 50);
@@ -48,10 +59,12 @@ export function startExperience(logoUrl: string): boolean {
   const tex = new THREE.TextureLoader().load(logoUrl);
   tex.encoding = THREE.sRGBEncoding;
   const { phone, parts } = buildPhone(S, R, logoUrl);
-  const intro = createIntro(tex, mob);
+  const intro = createIntro(tex, img, mob);
   S.add(intro.group);
 
   let introOn = true;
+  let baseZ = 6;
+  let speed = 1;
   let tI = 0;
   let last = performance.now();
   let E = 0;
@@ -60,17 +73,26 @@ export function startExperience(logoUrl: string): boolean {
   let tx = 0;
   let ty = 0;
 
+  /** Libera a página: o site aparece enquanto a logo ainda se dispersa. */
+  function revealHome(): void {
+    document.body.classList.remove("intro");
+    phone.visible = true;
+  }
+
   function endIntro(): void {
     if (!introOn) return;
     introOn = false;
-    document.body.classList.remove("intro");
+    revealHome();
     try {
       sessionStorage.setItem("mira", "1");
     } catch {
       /* armazenamento indisponível: a abertura volta na próxima visita */
     }
-    intro.group.visible = false;
-    phone.visible = true;
+    S.remove(intro.group);
+    intro.dispose();
+    tex.dispose();
+    baseZ = 6;
+    C.position.z = 6;
   }
 
   function resize(): void {
@@ -79,7 +101,7 @@ export function startExperience(logoUrl: string): boolean {
     R!.setSize(innerWidth, innerHeight, false);
     C.aspect = innerWidth / innerHeight;
     C.updateProjectionMatrix();
-    intro.group.scale.setScalar(Math.min(1, (3.78 * C.aspect * 0.9) / 4.2));
+    if (introOn) intro.group.scale.setScalar(Math.min(1, (3.78 * C.aspect * 0.9) / 4.2));
   }
 
   function scene(t: number): void {
@@ -116,19 +138,23 @@ export function startExperience(logoUrl: string): boolean {
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     if (introOn) {
-      tI += dt;
-      intro.update(tI);
-      if (tI > 4.4) introEl.classList.add("tg");
-      if (tI > 5) introEl.classList.add("en");
-      if (tI > 8.5) endIntro();
+      tI += dt * speed;
+      baseZ = intro.update(tI);
+      introEl.classList.toggle("tg", tI > 3.6 && tI < INTRO_DISSOLVE);
+      if (tI > INTRO_DISSOLVE + 0.7) revealHome();
+      if (phone.visible) scene(now / 1000);
+      if (tI >= INTRO_END) endIntro();
     } else {
       scene(now / 1000);
     }
+    C.position.z = baseZ;
     R!.render(S, C);
   }
 
-  document.querySelector("#skip")!.addEventListener("click", endIntro);
-  document.querySelector("#enter")!.addEventListener("click", endIntro);
+  // "Pular" acelera a abertura, que termina com a mesma dissolução, sem corte brusco
+  document.querySelector("#skip")!.addEventListener("click", () => {
+    speed = 4;
+  });
   addEventListener("pointermove", (e) => {
     tx = e.clientX / innerWidth - 0.5;
     ty = e.clientY / innerHeight - 0.5;
