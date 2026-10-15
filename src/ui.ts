@@ -123,11 +123,18 @@ export function initUI(): void {
 
   // barra de progresso da página
   const prog = $(".prog");
+  const outline = $(".outline");
   let tick = false;
+  let max = 0;
+  // scrollHeight força cálculo de layout: medir só quando o tamanho da página muda, não a cada rolagem
+  const mede = (): void => {
+    max = document.documentElement.scrollHeight - innerHeight;
+  };
+  mede();
+  new ResizeObserver(mede).observe(document.body);
   const atualiza = (): void => {
     tick = false;
-    const max = document.documentElement.scrollHeight - innerHeight;
-    if (scrollY < innerHeight * 1.5) document.documentElement.style.setProperty("--py", String(scrollY * 0.18));
+    if (scrollY < innerHeight * 1.5) outline.style.transform = `translate3d(0, ${Math.round(scrollY * 0.18)}px, 0)`;
     prog.style.transform = `scaleX(${max > 0 ? Math.min(1, scrollY / max) : 0})`;
   };
   addEventListener(

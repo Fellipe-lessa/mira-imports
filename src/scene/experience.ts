@@ -27,9 +27,21 @@ const HERO_X = 0.67;
 /** Intervalos (progresso da seção de assistência) em que cada texto fica visível. */
 const STAGES: [number, number][] = [[-1, 0.14], [0.14, 0.3], [0.3, 0.48], [0.48, 0.64], [0.64, 2]];
 
+const ultimo = new WeakMap<HTMLElement, Map<string, string>>();
+/** Só escreve no DOM quando o valor mudou: escrever estilo a cada quadro força recálculo de estilo. */
+function poe(el: HTMLElement, prop: string, valor: string): void {
+  let m = ultimo.get(el);
+  if (!m) ultimo.set(el, (m = new Map()));
+  if (m.get(prop) === valor) return;
+  m.set(prop, valor);
+  if (prop.startsWith("--")) el.style.setProperty(prop, valor);
+  else (el.style as unknown as Record<string, string>)[prop] = valor;
+}
+const n3 = (v: number): string => String(Math.round(v * 1000) / 1000);
+
 function createRenderer(canvas: HTMLCanvasElement, mob: boolean): THREE.WebGLRenderer | null {
   try {
-    return new THREE.WebGLRenderer({ canvas, antialias: !mob, alpha: true });
+    return new THREE.WebGLRenderer({ canvas, antialias: !mob && devicePixelRatio < 1.5, alpha: true, powerPreference: "high-performance" });
   } catch {
     return null;
   }
@@ -85,9 +97,11 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
   let yaw = 0;
   let dragging = false;
   let lastX = 0;
-  let lowQ = false;
+  let resScale = 1; // escala da resolução, ajustada sozinha conforme o desempenho
+  let ema = 0.016; // média do tempo de quadro
   let frames = 0;
-  let acc = 0;
+  let exTop = 0;
+  let exLen = 1;
   let baseZ = 6;
   let speed = 1;
   let tI = 0;
@@ -150,9 +164,16 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
     C.position.z = 6;
   }
 
+  /** Medidas da seção do celular, lidas só quando o layout muda (ler offsetTop a cada quadro força layout). */
+  function medir(): void {
+    exTop = exEl.offsetTop;
+    exLen = Math.max(1, exEl.offsetHeight - innerHeight);
+  }
+
   function resize(): void {
     mob = innerWidth < 900;
-    R!.setPixelRatio(lowQ ? 1 : Math.min(devicePixelRatio, mob ? 1.5 : 2));
+    medir();
+    R!.setPixelRatio(Math.max(0.6, Math.min(devicePixelRatio, mob ? 1.25 : 1.5) * resScale));
     R!.setSize(innerWidth, innerHeight, false);
     C.aspect = innerWidth / innerHeight;
     C.updateProjectionMatrix();
@@ -164,8 +185,7 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
     const k1 = 1 - Math.exp(-dt * 6);
     mx += (tx - mx) * k1;
     my += (ty - my) * k1;
-    const len = Math.max(1, exEl.offsetHeight - innerHeight);
-    const e = clamp((scrollY - exEl.offsetTop) / len);
+    const e = clamp((scrollY - exTop) / exLen);
     E += (e - E) * (reduzido() ? 1 : 1 - Math.exp(-dt * 9));
     // abre entre 12% e 28% da seção, fica aberto até 50% e fecha até 66%; depois o celular vai para o destaque
     const halfW = Math.tan((C.fov * Math.PI) / 360) * 6 * C.aspect; // meia largura visível a 6 unidades da câmera
@@ -201,25 +221,27 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
     C.position.set(cx * (mob ? 0.2 : 0.4), cy * (mob ? 0.2 : 0.4), baseZ - cw * (mob ? 0.4 : 0.8));
     stages.forEach((s, i) => {
       const o = clamp(Math.min((E - STAGES[i][0]) / 0.04, (STAGES[i][1] - E) / 0.04));
-      s.style.opacity = String(o);
-      s.style.setProperty("--o", String(o));
-      s.style.pointerEvents = o > 0.5 ? "auto" : "none";
+      poe(s, "opacity", n3(o));
+      poe(s, "--o", n3(o));
+      poe(s, "pointerEvents", o > 0.5 ? "auto" : "none");
     });
     const idx = E > 0.28 && E < 0.5 ? clamp(Math.floor(((E - 0.28) / 0.22) * 4), 0, 3) : -1;
-    dragEl.style.pointerEvents = feat > 0.5 ? "auto" : "none";
-    hint.style.opacity = String(feat);
+    poe(dragEl, "pointerEvents", feat > 0.5 ? "auto" : "none");
+    poe(hint, "opacity", n3(feat));
     legend.forEach((l, i) => l.classList.toggle("on", i === idx));
-    lgEl.style.opacity = a > 0.2 ? "1" : "0";
+    poe(lgEl, "opacity", a > 0.2 ? "1" : "0");
 
     // rótulos técnicos presos às peças
-    C.updateMatrixWorld();
+    if (E > 0.2 && E < 0.56) C.updateMatrixWorld();
     TAGS.forEach((tg, i) => {
       const el = tags[i];
       const p = parte(tg.part);
       if (!el || !p) return;
+      const w = win(i);
+      poe(el, "opacity", n3(w));
+      if (w < 0.002) return;
       p.getWorldPosition(v3).project(C);
-      el.style.opacity = String(win(i));
-      el.style.transform = `translate(${((v3.x + 1) / 2) * innerWidth}px, ${((1 - v3.y) / 2) * innerHeight}px)`;
+      poe(el, "transform", `translate(${Math.round(((v3.x + 1) / 2) * innerWidth * 10) / 10}px, ${Math.round(((1 - v3.y) / 2) * innerHeight * 10) / 10}px)`);
     });
   }
 
@@ -231,6 +253,8 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
     }
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
+    // depois da seção do celular o catálogo cobre a tela: não há o que calcular nem desenhar
+    const covered = !introOn && scrollY >= exTop + exLen + innerHeight - 32;
     if (introOn) {
       tI += dt * speed;
       baseZ = intro.update(tI);
@@ -238,20 +262,23 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
       if (tI > INTRO_DISSOLVE + 0.7) revealHome();
       if (phone.visible) scene(now / 1000, dt);
       if (tI >= INTRO_END) endIntro();
-    } else {
+    } else if (!covered) {
       scene(now / 1000, dt);
     }
     if (!phone.visible) C.position.z = baseZ;
-    // qualidade adaptativa: se a média dos primeiros quadros for lenta, reduz a resolução
-    if (!introOn && !lowQ && frames < 120) {
-      acc += dt;
-      if (++frames === 120 && acc / frames > 0.028) {
-        lowQ = true;
-        resize();
+    // resolução dinâmica: se os quadros demorarem, reduz; se sobrar folga, sobe de volta
+    if (!introOn && !covered) {
+      ema += (dt - ema) * 0.08;
+      if (++frames % 40 === 0) {
+        if (ema > 0.026 && resScale > 0.6) {
+          resScale = Math.max(0.6, resScale * 0.85);
+          resize();
+        } else if (ema < 0.018 && resScale < 1) {
+          resScale = Math.min(1, resScale * 1.08);
+          resize();
+        }
       }
     }
-    // depois da seção do celular o catálogo cobre a tela: não há o que desenhar
-    const covered = !introOn && scrollY >= exEl.offsetTop + exEl.offsetHeight - 32;
     if (!covered) R!.render(S, C);
   }
 
@@ -281,6 +308,7 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
     ty = e.clientY / innerHeight - 0.5;
   });
   addEventListener("resize", resize);
+  new ResizeObserver(medir).observe(document.body);
   addEventListener("pagehide", () => R.dispose());
 
   let skip = reduzido();
