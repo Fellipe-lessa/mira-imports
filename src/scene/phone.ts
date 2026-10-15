@@ -227,7 +227,7 @@ function screenTex(img: HTMLImageElement): THREE.CanvasTexture {
     x.fillStyle = "#f4f1e8";
     x.font = "600 172px system-ui,sans-serif";
     x.fillText(String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"), 256, 300);
-    pill(256, 48, 178, 50, "#000");
+    pill(256, 46, 164, 48, "#000");
     x.fillStyle = "#f4f1e8";
     for (let i = 0; i < 4; i++) x.fillRect(66 + i * 10, 48 - i * 4, 7, 6 + i * 4);
     x.strokeStyle = "#f4f1e8";
@@ -334,7 +334,7 @@ export function buildPhone(S: THREE.Scene, R: THREE.WebGLRenderer, logoUrl: stri
   shine.position.z = 0.0072;
   tela.add(shine);
   const cam0 = disc(0.011, 0.0074, M(0x0a0a1a, 0, 0.1));
-  cam0.position.set(0.075, sh / 2 - (48 / 1092) * sh, 0.0074);
+  cam0.position.set(0.075, sh / 2 - (46 / 1092) * sh, 0.0074);
   tela.add(cam0);
   const panel = slab(W - 0.04, H - 0.04, 0.1, 0.008, oled);
   panel.position.z = -0.007;

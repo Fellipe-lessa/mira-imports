@@ -29,6 +29,10 @@ export interface Produto {
   cat: CatKey;
   desc: string;
   preco: string;
+  /** Caminho de uma foto em public/ (ex.: "produtos/capinha.jpg"). Sem foto, usa a ilustração da categoria. */
+  imagem?: string;
+  /** false para produtos reais: remove o selo "EXEMPLO". */
+  exemplo?: boolean;
 }
 
 const base: Array<Pick<Produto, "nome" | "cat" | "desc">> = [
@@ -45,7 +49,7 @@ const base: Array<Pick<Produto, "nome" | "cat" | "desc">> = [
   { nome: "Chaveiro Exemplo", cat: "chaveiros", desc: "Item de demonstração." },
 ];
 
-export const PRODUTOS: Produto[] = base.map((p, id) => ({ ...p, id, preco: "Preço sob consulta" }));
+export const PRODUTOS: Produto[] = base.map((p, id) => ({ ...p, id, preco: "Preço sob consulta", exemplo: true }));
 
 /** Troque pelos diferenciais reais da loja. */
 export const DIFERENCIAIS = [
@@ -58,3 +62,6 @@ export const DIFERENCIAIS = [
 /** Gera o link do WhatsApp com a mensagem já codificada. */
 export const wa = (mensagem: string): string =>
   `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(mensagem)}`;
+
+/** Categorias em destaque na página inicial. Preencha `imagem` com uma foto em public/ para trocar a ilustração. */
+export const DESTAQUES: Array<{ cat: CatKey; imagem?: string }> = [{ cat: "celulares" }, { cat: "fones" }, { cat: "acessorios" }];

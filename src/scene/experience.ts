@@ -15,14 +15,17 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 
 /** Rótulos técnicos: nome da peça (propriedade name em parts) e janela de rolagem em que ficam visíveis. */
 const TAGS: { part: string; w: [number, number] }[] = [
-  { part: "tela", w: [0.3, 0.4] },
-  { part: "cam", w: [0.4, 0.5] },
-  { part: "bateria", w: [0.5, 0.6] },
-  { part: "placa", w: [0.6, 0.7] },
+  { part: "tela", w: [0.28, 0.335] },
+  { part: "cam", w: [0.335, 0.39] },
+  { part: "bateria", w: [0.39, 0.445] },
+  { part: "placa", w: [0.445, 0.5] },
 ];
 
+/** Posição horizontal do celular na hero, como fração da largura da tela. Mantenha igual ao `left` de `.band` no CSS. */
+const HERO_X = 0.67;
+
 /** Intervalos (progresso da seção de assistência) em que cada texto fica visível. */
-const STAGES: [number, number][] = [[-1, 0.2], [0.2, 0.46], [0.46, 0.7], [0.7, 0.88], [0.88, 2]];
+const STAGES: [number, number][] = [[-1, 0.14], [0.14, 0.3], [0.3, 0.48], [0.48, 0.64], [0.64, 2]];
 
 function createRenderer(canvas: HTMLCanvasElement, mob: boolean): THREE.WebGLRenderer | null {
   try {
@@ -38,11 +41,15 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
   const introEl = document.querySelector<HTMLElement>("#intro")!;
   const exEl = document.querySelector<HTMLElement>("#assistencia")!;
   const lgEl = document.querySelector<HTMLElement>("#lg")!;
+  const dragEl = document.querySelector<HTMLElement>("#drag")!;
+  const hint = document.querySelector<HTMLElement>(".hint")!;
   const stages = [...document.querySelectorAll<HTMLElement>(".st")];
   const tags = [...document.querySelectorAll<HTMLElement>(".tag")];
   const v3 = new THREE.Vector3();
   const legend = [...document.querySelectorAll<HTMLElement>("#lg li")];
-  const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const RM0 = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  /** Movimento reduzido: preferência do sistema ou o botão do rodapé. */
+  const reduzido = (): boolean => RM0 || document.documentElement.classList.contains("rm");
   let mob = innerWidth < 900;
 
   const R = createRenderer(canvas, mob);
@@ -74,6 +81,10 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
   S.add(intro.group);
 
   let introOn = true;
+  let showT = 0;
+  let yaw = 0;
+  let dragging = false;
+  let lastX = 0;
   let lowQ = false;
   let frames = 0;
   let acc = 0;
@@ -90,6 +101,7 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
   /** Libera a página: o site aparece enquanto a logo ainda se dispersa. */
   function revealHome(): void {
     document.body.classList.remove("intro");
+    if (!phone.visible) showT = performance.now() / 1000;
     phone.visible = true;
   }
 
@@ -154,19 +166,26 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
     my += (ty - my) * k1;
     const len = Math.max(1, exEl.offsetHeight - innerHeight);
     const e = clamp((scrollY - exEl.offsetTop) / len);
-    E += (e - E) * (RM ? 1 : 1 - Math.exp(-dt * 9));
-    const a = sm(E, 0.12, 0.4) - sm(E, 0.6, 0.88);
+    E += (e - E) * (reduzido() ? 1 : 1 - Math.exp(-dt * 9));
+    // abre entre 12% e 28% da seção, fica aberto até 50% e fecha até 66%; depois o celular vai para o destaque
+    const halfW = Math.tan((C.fov * Math.PI) / 360) * 6 * C.aspect; // meia largura visível a 6 unidades da câmera
+    const a = sm(E, 0.12, 0.28) - sm(E, 0.5, 0.66);
+    const feat = sm(E, 0.64, 0.7);
+    const featX = mob ? 0 : 0.62 * halfW;
     const k = mob ? 0.6 : 1;
     for (const o of parts) o.position.z = o.userData.z + o.userData.o * a * k;
     // no início o celular é grande e invade o painel; na vista explodida diminui para caber na tela
-    phone.position.set(0, mob ? 0.75 : 0, 0);
-    phone.scale.setScalar((mob ? 1.05 : 1.75) - (mob ? 0.2 : 0.4) * a);
-    const idle = RM ? 0 : Math.sin(t * 0.5) * 0.3 + mx * 0.4;
-    phone.rotation.y = idle * (1 - 0.7 * a) - 0.8 * a + sm(E, 0.9, 1) * 6.283;
-    phone.rotation.x = 0.14 * a + (RM ? 0 : my * 0.12);
+    const heroX = mob ? 0 : (HERO_X * 2 - 1) * halfW;
+    phone.position.set(heroX * (1 - sm(E, 0.02, 0.12)) + featX * sm(E, 0.6, 0.72), mob ? 0.75 : 0, 0);
+    const entrada = reduzido() ? 1 : sm(t - showT, 0, 1.4); // o celular cresce suavemente ao entrar
+    phone.scale.setScalar(((mob ? 1.05 : 1.75) - (mob ? 0.2 : 0.4) * a - (mob ? 0 : 0.15) * feat) * (0.9 + 0.1 * entrada));
+    if (!dragging) yaw *= Math.exp(-dt * (E < 0.6 ? 4 : 0.5));
+    const idle = reduzido() ? 0 : Math.sin(t * 0.5) * 0.3 + mx * 0.4;
+    phone.rotation.y = idle * (1 - 0.7 * a) - 0.8 * a + sm(E, 0.6, 0.74) * 6.283 + yaw;
+    phone.rotation.x = 0.14 * a + (reduzido() ? 0 : my * 0.12);
     // câmera de inspeção: desloca e aproxima em direção à peça destacada
     const win = (i: number): number =>
-      sm(E, TAGS[i].w[0] - 0.03, TAGS[i].w[0] + 0.02) * (1 - sm(E, TAGS[i].w[1] - 0.02, TAGS[i].w[1] + 0.03));
+      sm(E, TAGS[i].w[0] - 0.012, TAGS[i].w[0] + 0.008) * (1 - sm(E, TAGS[i].w[1] - 0.008, TAGS[i].w[1] + 0.012));
     let cx = 0;
     let cy = 0;
     let cw = 0;
@@ -186,7 +205,9 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
       s.style.setProperty("--o", String(o));
       s.style.pointerEvents = o > 0.5 ? "auto" : "none";
     });
-    const idx = E > 0.3 && E < 0.72 ? clamp(Math.floor(((E - 0.3) / 0.4) * 4), 0, 3) : -1;
+    const idx = E > 0.28 && E < 0.5 ? clamp(Math.floor(((E - 0.28) / 0.22) * 4), 0, 3) : -1;
+    dragEl.style.pointerEvents = feat > 0.5 ? "auto" : "none";
+    hint.style.opacity = String(feat);
     legend.forEach((l, i) => l.classList.toggle("on", i === idx));
     lgEl.style.opacity = a > 0.2 ? "1" : "0";
 
@@ -235,6 +256,23 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
   }
 
   // "Pular" acelera a abertura, que termina com a mesma dissolução, sem corte brusco
+  // giro do iPhone por arraste (só na seção de destaque); a rolagem vertical continua normal
+  dragEl.addEventListener("pointerdown", (e) => {
+    dragging = true;
+    lastX = e.clientX;
+    dragEl.setPointerCapture(e.pointerId);
+  });
+  dragEl.addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    yaw += (e.clientX - lastX) * 0.012;
+    lastX = e.clientX;
+  });
+  const solta = (): void => {
+    dragging = false;
+  };
+  dragEl.addEventListener("pointerup", solta);
+  dragEl.addEventListener("pointercancel", solta);
+
   document.querySelector("#skip")!.addEventListener("click", () => {
     speed = 4;
   });
@@ -245,7 +283,7 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
   addEventListener("resize", resize);
   addEventListener("pagehide", () => R.dispose());
 
-  let skip = RM;
+  let skip = reduzido();
   try {
     if (sessionStorage.getItem("mira")) skip = true;
   } catch {

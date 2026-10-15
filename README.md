@@ -82,15 +82,28 @@ A cada `git push` na branch `main`, o site é publicado de novo.
 | Cores e luz da faixa central | `.band` em `src/styles.css` |
 | Peças, rótulos e janelas de rolagem da desmontagem | `src/scene/phone.ts` e `TAGS` em `src/scene/experience.ts` |
 
-## Aparência: fundo perolado, painel e faixa
+## Aparência e conteúdo
 
 | O que | Onde |
 | --- | --- |
-| Cores base (amarelo, grafite, tons de pérola e de tinta) e raios de borda | variáveis no topo de `src/styles.css` |
-| Painel perolado da hero | `.panel` em `src/styles.css` |
-| Faixa vertical amarelo e preto | `.band` em `src/styles.css` |
+| Cores base (amarelo, grafite, tons de pérola e de tinta), fontes (`--display`) e raios de borda | variáveis no topo de `src/styles.css` |
+| Faixa vertical amarelo e preto da hero (e `HERO_X`, a posição do celular) | `.band` em `src/styles.css` e `HERO_X` em `src/scene/experience.ts` |
 | Grão do fundo (intensidade) | `opacity` de `.grain` em `src/styles.css` |
-| Seções com superfície perolada | classe `pearl` nas `<section>` do `index.html` |
+| Fontes | Archivo (títulos) e Geist (textos), carregadas pelo Google Fonts no `index.html` |
+| Textos da hero, do destaque do iPhone 15 Pro e das especificações | `index.html` |
+| Diferenciais (faixa abaixo da hero), categorias em destaque e produtos | `src/config.ts` |
+
+### Fotos de produtos
+
+O catálogo usa ilustrações em SVG (`src/art.ts`) enquanto não houver fotos reais. Para trocar por foto, coloque o arquivo em `public/produtos/` e preencha o campo `imagem` do produto ou da categoria em destaque no `src/config.ts`, por exemplo `imagem: "produtos/capinha.jpg"`. Para produtos reais, use também `exemplo: false` para remover o selo "EXEMPLO".
+
+### iPhone 15 Pro (destaque)
+
+O texto do destaque usa especificações divulgadas pela Apple para o iPhone 15 Pro (titânio, tela de 6,1 pol., chip A17 Pro, câmera principal de 48 MP, USB-C). Confira-as e a variante de cor (Titânio Preto) antes de publicar. O site não informa preço, estoque, garantia ou condições de pagamento: o botão leva à consulta por WhatsApp.
+
+### Movimento
+
+A página respeita a preferência de movimento reduzido do sistema e tem o botão "Reduzir movimento" no rodapé. O giro do iPhone por arraste só existe no destaque.
 
 ## Modelo 3D do iPhone
 

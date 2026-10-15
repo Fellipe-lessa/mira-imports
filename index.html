@@ -11,7 +11,8 @@
 <meta property="og:type" content="website">
 <link rel="icon" href="/logo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Geist:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,500..900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
 </head>
 <body class="intro">
 <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
@@ -25,12 +26,15 @@
 </div>
 
 <header>
-  <button id="mb" aria-expanded="false" aria-controls="menu" aria-label="Abrir menu"><span></span><span></span><span></span></button>
-  <a class="brand" href="#inicio"><img class="logo" src="/logo.jpg" alt="Logo da Mira Imports" width="38" height="38"><span>Mira Imports</span></a>
+  <a class="brand" href="#inicio"><img class="logo" src="/logo.jpg" alt="Logo da Mira Imports" width="36" height="36"><span>Mira Imports</span></a>
   <nav class="top" aria-label="Principal">
-    <a href="#catalogo" data-cat="celulares">Celulares</a><a href="#catalogo" data-cat="acessorios">Acessórios</a><a href="#assistencia">Assistência</a><a href="#contato">Contato</a>
-    <a class="btn s" data-wa="Olá! Vim pelo site da Mira Imports e quero falar com a loja.">FALAR COM A LOJA</a>
+    <a href="#catalogo" data-cat="celulares">Celulares</a><a href="#catalogo" data-cat="acessorios">Acessórios</a><a href="#assistencia">Assistência</a><a href="#sobre">Sobre</a><a href="#contato">Contato</a>
   </nav>
+  <div class="hr">
+    <button class="hs" id="busca" type="button">Buscar <i class="dot" aria-hidden="true"></i></button>
+    <a class="btn s" data-wa="Olá! Vim pelo site da Mira Imports e quero falar com a loja.">FALAR COM A LOJA</a>
+    <button id="mb" aria-expanded="false" aria-controls="menu" aria-label="Abrir menu"><span></span><span></span><span></span></button>
+  </div>
 </header>
 
 <div id="menu" role="dialog" aria-label="Menu do site">
@@ -51,30 +55,57 @@
 
 <main id="conteudo">
   <section class="hero" id="inicio">
-    <div class="panel" aria-hidden="true"></div>
     <div class="band" aria-hidden="true"></div>
+    <div class="outline" aria-hidden="true">MIRA</div>
     <div class="hc">
       <img class="fb logo" src="/logo.jpg" alt="Logo da Mira Imports" width="260" height="260">
-      <h1>Seu universo. Conectado.</h1>
-      <p class="m">Venda, compra e assistência técnica de celulares com atendimento próximo e soluções para o seu dia a dia.</p>
-      <div class="row"><a class="btn" href="#catalogo">EXPLORAR PRODUTOS</a><a class="btn g" data-wa="Olá! Preciso de assistência técnica para o meu aparelho.">PRECISO DE ASSISTÊNCIA</a></div>
+      <h1><span>Seu universo.</span><span class="y">Conectado.</span></h1>
+      <p class="m">Venda, compra e assistência técnica de celulares, com atendimento próximo e soluções para o seu dia a dia.</p>
+      <div class="cta"><a class="pill" href="#catalogo">Ver produtos <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></a><a class="lnk" href="#assistencia">Assistência técnica <i class="dot" aria-hidden="true"></i></a></div>
     </div>
-    <aside class="aside" aria-label="Acesso rápido">
-      <a href="#catalogo" data-cat="celulares"><small>Novos e usados, conforme a oferta</small><b>Celulares</b></a>
-      <a href="#assistencia"><small>Avaliação do seu aparelho</small><b>Assistência técnica</b></a>
-      <a href="#catalogo" data-cat="acessorios"><small>Capinhas, películas e carregadores</small><b>Acessórios</b></a>
+    <aside class="side" aria-label="Destaque">
+      <b>iPhone 15 Pro</b><span>Titânio Preto. Disponibilidade sob consulta.</span>
+      <a href="#iphone" aria-label="Ver o iPhone 15 Pro"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
     </aside>
   </section>
 
+  <section class="strip" id="beneficios" aria-label="Diferenciais da loja"><ul id="dif"></ul></section>
+
   <section class="ex" id="assistencia" aria-label="Assistência técnica">
     <div class="stick">
+      <div class="drag" id="drag" aria-hidden="true"></div>
+      <p class="hint" aria-hidden="true">Arraste para girar o iPhone</p>
       <ul id="lg" aria-label="Componentes"><li>Tela</li><li>Câmeras</li><li>Bateria</li><li>Placa principal</li></ul>
       <div class="tag" aria-hidden="true"><span class="dot"></span><i></i><b>TELA</b></div><div class="tag" aria-hidden="true"><span class="dot"></span><i></i><b>CÂMERAS</b></div><div class="tag" aria-hidden="true"><span class="dot"></span><i></i><b>BATERIA</b></div><div class="tag" aria-hidden="true"><span class="dot"></span><i></i><b>PLACA PRINCIPAL</b></div>
       <div class="st"><h2>Tecnologia que merece cuidado.</h2><p class="m">Venda, compra e assistência técnica de celulares com atendimento próximo e soluções para o seu dia a dia.</p></div>
       <div class="st"><h2>Cada detalhe importa.</h2><p class="m">Assistência técnica para avaliar problemas, identificar necessidades de reparo e orientar o cliente.</p></div>
       <div class="st"><h2>Diagnóstico. Reparo. Precisão.</h2><p class="m">Conte o que está acontecendo com o seu aparelho e a loja avalia o caso.</p><a class="btn" data-wa="Olá! Preciso de assistência técnica para o meu aparelho.">PRECISO DE ASSISTÊNCIA</a></div>
       <div class="st"><h2>Pronto para o próximo capítulo.</h2></div>
-      <div class="st"><h2>Seu próximo smartphone começa aqui.</h2><div class="row"><a class="btn" data-wa="Olá! Quero verificar a disponibilidade de celulares.">VERIFICAR DISPONIBILIDADE</a><a class="btn g" data-wa="Olá! Quero avaliar o meu celular.">AVALIAR MEU CELULAR</a></div></div>
+      <div class="st feat" id="iphone">
+        <p class="kicker">Em destaque</p>
+        <h2>iPhone 15 Pro</h2>
+        <p class="kicker">Titânio Preto</p>
+        <dl class="specs">
+          <div><dt>Acabamento</dt><dd>Titânio</dd></div>
+          <div><dt>Tela</dt><dd>6,1 pol. Super Retina XDR</dd></div>
+          <div><dt>Chip</dt><dd>A17 Pro</dd></div>
+          <div><dt>Câmera principal</dt><dd>48 MP</dd></div>
+          <div><dt>Conexão</dt><dd>USB-C</dd></div>
+        </dl>
+        <div class="cta"><a class="pill" data-wa="Olá! Quero consultar a disponibilidade do iPhone 15 Pro (Titânio Preto).">Consultar disponibilidade <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></a><a class="lnk" data-wa="Olá! Quero avaliar o meu celular.">Avaliar meu celular</a></div>
+        <p class="note">Especificações divulgadas pela Apple. Disponibilidade, armazenamento e condições: consulte a loja.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="solid cats" id="colecoes" aria-labelledby="colecoes-t">
+    <div class="wrap cats-grid">
+      <div class="cats-intro">
+        <h2 id="colecoes-t">Categorias em destaque</h2>
+        <p class="m">Celulares, fones de ouvido e acessórios, com consulta direta pelo WhatsApp.</p>
+        <a class="lnk" href="#catalogo" data-cat="todos">Ver todos os produtos <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
+      </div>
+      <ul id="cats3"></ul>
     </div>
   </section>
 
@@ -101,9 +132,6 @@
       </div>
     </div>
   </section>
-
-  <section class="solid" id="diferenciais"><div class="wrap split"><h2>Por que a Mira Imports</h2><div class="dif" id="dif"></div></div></section>
-
   <section class="solid" id="sobre">
     <div class="wrap split">
       <h2>Sobre a loja</h2>
@@ -120,10 +148,14 @@
 </main>
 
 <footer>
-  <div class="fcol"><a class="brand" href="#inicio"><img class="logo" src="/logo.jpg" alt="" width="38" height="38"><span>Mira Imports</span></a><p>Celulares, acessórios e assistência técnica.</p></div>
-  <div class="fcol"><h3>Loja</h3><p>Endereço: <span data-s="endereco"></span></p><p>Horário: <span data-s="horario"></span></p></div>
-  <div class="fcol"><h3>Contato</h3><p>WhatsApp: <span data-s="whatsapp"></span></p><p>Instagram: <span data-s="instagram"></span></p></div>
-  <div class="fcol"><h3>Informações</h3><p><a href="#sobre">Sobre a loja</a></p><p>Política de privacidade: a definir</p><p>Protótipo para avaliação. Produtos e dados são exemplos.</p></div>
+  <div class="f-top">
+    <div class="fcol f-brand"><a class="brand" href="#inicio"><img class="logo" src="/logo.jpg" alt="" width="36" height="36"><span>Mira Imports</span></a><p>Celulares, acessórios e assistência técnica.</p></div>
+    <div class="fcol"><h3>Loja</h3><ul><li><a href="#catalogo" data-cat="celulares">Celulares</a></li><li><a href="#catalogo" data-cat="fones">Fones de ouvido</a></li><li><a href="#catalogo" data-cat="acessorios">Acessórios</a></li><li><a href="#catalogo" data-cat="todos">Todos os produtos</a></li></ul></div>
+    <div class="fcol"><h3>Atendimento</h3><ul><li><a href="#assistencia">Assistência técnica</a></li><li><a data-wa="Olá! Vim pelo site da Mira Imports e quero falar com a loja.">WhatsApp</a></li><li><a href="#contato">Contato</a></li></ul></div>
+    <div class="fcol"><h3>Informações</h3><p>Endereço: <span data-s="endereco"></span></p><p>Horário: <span data-s="horario"></span></p><p>WhatsApp: <span data-s="whatsapp"></span></p><p>Instagram: <span data-s="instagram"></span></p></div>
+    <div class="f-art" aria-hidden="true"><img class="logo" src="/logo.jpg" alt="" width="84" height="84"></div>
+  </div>
+  <div class="f-bot"><p>© <span id="ano"></span> Mira Imports. Protótipo para avaliação: produtos e dados são exemplos.</p><p>Política de privacidade: a definir. iPhone é marca registrada da Apple Inc.</p><button id="rm" type="button" aria-pressed="false">Reduzir movimento</button></div>
 </footer>
 <a class="btn wa-float" data-wa="Olá! Vim pelo site da Mira Imports e quero falar com a loja.">WHATSAPP</a>
 <script type="module" src="/src/main.ts"></script>
