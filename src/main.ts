@@ -1,4 +1,5 @@
 import "./styles.css";
+import "./styles-premium.css";
 import { initUI } from "./ui";
 
 initUI();
