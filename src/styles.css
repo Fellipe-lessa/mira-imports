@@ -181,8 +181,6 @@ main section{position:relative;z-index:2}
 footer{position:relative;z-index:2;margin-top:var(--sp);border-top:1px solid var(--ln);padding:44px 5vw;display:flex;gap:30px;flex-wrap:wrap;color:var(--m);font-size:14px}
 footer .brand{color:var(--w)}footer p{margin:0 0 4px}
 .fcol{flex:1 1 200px}.fcol h3{font-size:14px;color:var(--w);margin:0 0 10px}.fcol a{color:var(--m)}
-.wa-float{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:35;box-shadow:0 8px 24px #0009}
-.intro .wa-float{display:none}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 
 /* ===== Faixa de diferenciais ===== */
@@ -215,11 +213,9 @@ footer{display:block;padding:56px 5vw 28px}
 .fcol ul{list-style:none;margin:0;padding:0}.fcol li{margin-bottom:8px}
 .fcol a{text-decoration:none;transition:color .25s}.fcol a:hover{color:var(--y)}
 .fcol h3{font:600 11px/1 Geist,sans-serif;letter-spacing:.14em;text-transform:uppercase;margin:0 0 16px}
-.f-art{border-radius:var(--r-m);background:linear-gradient(135deg,#fff200,#b8a700 60%,#0d0c0a);display:grid;place-items:center;min-height:130px}
-.f-art img{width:84px;height:84px;border-radius:50%}
 .f-bot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:44px;padding-top:20px;border-top:1px solid var(--ln);font-size:12px}
 .f-bot p{margin:0;max-width:none}
-@media(max-width:900px){.f-top{grid-template-columns:1fr 1fr}.f-brand,.f-art{grid-column:1/-1}}
+@media(max-width:900px){.f-top{grid-template-columns:1fr 1fr}.f-brand{grid-column:1/-1}}
 
 /* ===== Destaque do iPhone 15 Pro ===== */
 .st.feat{max-width:min(440px,34vw)}
@@ -239,8 +235,6 @@ footer{display:block;padding:56px 5vw 28px}
 /* ===== Movimento ===== */
 .js [data-reveal]{opacity:0;transform:translateY(28px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0ms)}
 .js [data-reveal].in,body:not(.intro) [data-reveal="hero"]{opacity:1;transform:none}
-.f-bot button{background:none;border:1px solid #5b584f;color:var(--w);border-radius:999px;padding:8px 14px;font:500 11px/1 Geist,sans-serif;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:border-color .25s}
-.f-bot button:hover,.f-bot button[aria-pressed=true]{border-color:var(--y)}
 .rm *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 .rm [data-reveal]{opacity:1!important;transform:none!important}
 
