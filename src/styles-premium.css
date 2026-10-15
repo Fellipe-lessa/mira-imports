@@ -346,3 +346,153 @@ footer { margin-top: clamp(55px, 7vw, 95px); padding: 44px 5vw 26px; }
   .f-brand { grid-column: 1 / -1; }
   .f-bot { margin-top: 28px; align-items: flex-start; flex-direction: column; }
 }
+
+/* =====================================================================
+   MIRA AMBIENT BACKGROUND — refinamento de fundo apenas
+   Escopo: fundos, gradientes, textura e iluminação atmosférica.
+   Não altera layout, tipografia, cards, componentes, nem a cena Three.js.
+   ===================================================================== */
+body {
+  background-color: #080807;
+  background-image:
+    radial-gradient(ellipse 85% 58% at 48% -12%, rgba(72, 69, 44, .20), transparent 72%),
+    linear-gradient(132deg, #080807 0%, #10100e 27%, #090908 52%, #111009 77%, #080807 100%);
+}
+
+/* Textura fina + zonas de luz, sem cobrir os elementos da interface. */
+.grain {
+  opacity: .82;
+  background-color: #090908;
+  background-image:
+    url("./assets/grain.png"),
+    radial-gradient(ellipse 68% 50% at 7% 4%, rgba(244, 236, 0, .15) 0%, rgba(244, 236, 0, .045) 37%, transparent 76%),
+    radial-gradient(ellipse 54% 55% at 97% 18%, rgba(230, 226, 204, .13) 0%, rgba(195, 189, 158, .035) 43%, transparent 76%),
+    radial-gradient(ellipse 75% 47% at 51% 52%, rgba(119, 112, 65, .12) 0%, rgba(94, 88, 53, .035) 45%, transparent 78%),
+    radial-gradient(ellipse 58% 46% at 4% 88%, rgba(226, 222, 204, .075) 0%, rgba(226, 222, 204, .02) 45%, transparent 78%),
+    radial-gradient(ellipse 57% 43% at 100% 98%, rgba(244, 236, 0, .075) 0%, rgba(244, 236, 0, .018) 42%, transparent 76%),
+    linear-gradient(118deg, #080807 0%, #11110e 23%, #090908 49%, #15130b 73%, #080807 100%);
+  background-size:
+    96px 96px,
+    78% 64%,
+    68% 60%,
+    78% 62%,
+    64% 54%,
+    64% 54%,
+    100% 100%;
+  background-position:
+    0 0,
+    0 0,
+    100% 16%,
+    53% 52%,
+    0 100%,
+    100% 100%,
+    center;
+  background-repeat:
+    repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat;
+}
+
+/* Uma camada lenta de luz difusa dá vida ao fundo sem animar os componentes. */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: -8%;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(ellipse 35% 28% at 18% 17%, rgba(244, 236, 0, .09), transparent 78%),
+    radial-gradient(ellipse 30% 38% at 83% 58%, rgba(245, 244, 239, .075), transparent 80%),
+    radial-gradient(ellipse 52% 28% at 48% 99%, rgba(141, 126, 0, .07), transparent 82%);
+  opacity: .9;
+  transform: translate3d(-1%, .3%, 0) scale(1.02);
+  animation: miraAmbientDrift 38s ease-in-out infinite alternate;
+}
+
+@keyframes miraAmbientDrift {
+  from { transform: translate3d(-1.2%, .3%, 0) scale(1.02); }
+  to   { transform: translate3d(1.2%, -0.6%, 0) scale(1.045); }
+}
+
+/* Hero: halo ambiente muito discreto, sem alterar a faixa já existente nem a cena 3D. */
+.hero {
+  background-image:
+    radial-gradient(ellipse 43% 44% at 8% 17%, rgba(244, 236, 0, .055), transparent 76%),
+    radial-gradient(ellipse 44% 48% at 93% 28%, rgba(221, 218, 199, .055), transparent 78%),
+    linear-gradient(180deg, rgba(255, 255, 255, .012), transparent 44%, rgba(244, 236, 0, .012));
+}
+
+/* Benefícios: superfície escura com variações de carvão e ouro apagado. */
+.strip {
+  background-color: #0b0b0a;
+  background-image:
+    radial-gradient(ellipse 36% 170% at 7% 0%, rgba(244, 236, 0, .055), transparent 76%),
+    radial-gradient(ellipse 40% 150% at 94% 100%, rgba(215, 211, 192, .045), transparent 78%),
+    linear-gradient(106deg, #0b0b0a 0%, #11110e 47%, #0a0a09 100%);
+}
+
+/* Capítulo do smartphone: camada translúcida; a cena e o canvas permanecem intactos. */
+.ex {
+  background-color: transparent;
+  background-image:
+    radial-gradient(ellipse 45% 34% at 86% 16%, rgba(244, 236, 0, .045), transparent 78%),
+    radial-gradient(ellipse 42% 38% at 9% 69%, rgba(217, 213, 194, .045), transparent 80%);
+}
+
+/* Categorias: halos discretos para dar profundidade ao espaço atrás dos cards. */
+.cats {
+  background-image:
+    radial-gradient(ellipse 49% 47% at 87% 14%, rgba(244, 236, 0, .055), transparent 77%),
+    radial-gradient(ellipse 45% 50% at 8% 76%, rgba(224, 220, 199, .045), transparent 78%),
+    linear-gradient(118deg, rgba(255, 255, 255, .008), transparent 42%, rgba(244, 236, 0, .012));
+}
+
+/* Seções escuras de conteúdo: variações atmosféricas, com todos os elementos intactos. */
+#servicos {
+  background-image:
+    radial-gradient(ellipse 55% 42% at 3% 4%, rgba(244, 236, 0, .035), transparent 78%),
+    radial-gradient(ellipse 44% 48% at 98% 62%, rgba(219, 215, 195, .04), transparent 80%);
+}
+
+#sobre {
+  background-image:
+    radial-gradient(ellipse 48% 52% at 92% 10%, rgba(244, 236, 0, .04), transparent 80%),
+    radial-gradient(ellipse 56% 48% at 12% 91%, rgba(223, 220, 202, .04), transparent 80%);
+}
+
+/* Superfícies peroladas: mais nuances, mantendo o contraste dos conteúdos existentes. */
+.pearl {
+  background-image:
+    url("./assets/grain.png"),
+    radial-gradient(ellipse 64% 54% at 96% 0%, rgba(255, 255, 255, .90), transparent 72%),
+    radial-gradient(ellipse 43% 38% at 5% 8%, rgba(244, 236, 0, .085), transparent 80%),
+    radial-gradient(ellipse 58% 56% at 72% 100%, rgba(176, 170, 145, .12), transparent 82%),
+    linear-gradient(128deg, #f2f0e9 0%, #e5e2d9 47%, #f4f2ec 77%, #e8e5dc 100%);
+}
+
+#contato {
+  background-image:
+    url("./assets/grain.png"),
+    radial-gradient(ellipse 67% 61% at 100% 0%, rgba(255, 255, 255, .92), transparent 73%),
+    radial-gradient(ellipse 46% 42% at 3% 12%, rgba(244, 236, 0, .08), transparent 82%),
+    radial-gradient(ellipse 58% 55% at 65% 100%, rgba(175, 169, 142, .12), transparent 82%),
+    linear-gradient(126deg, #f3f1ea 0%, #e5e2d9 55%, #f5f3ed 100%);
+}
+
+/* Rodapé: transição natural a partir das áreas inferiores do fundo. */
+footer {
+  background-image:
+    radial-gradient(ellipse 45% 55% at 6% 0%, rgba(244, 236, 0, .035), transparent 80%),
+    linear-gradient(180deg, rgba(9, 9, 8, .16), rgba(7, 7, 6, .5));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grain::after {
+    animation: none;
+    transform: none;
+  }
+}
