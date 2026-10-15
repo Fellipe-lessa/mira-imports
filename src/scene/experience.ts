@@ -111,6 +111,7 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
   let my = 0;
   let tx = 0;
   let ty = 0;
+  let canvasCovered = false; // estado do canvas fixo fora do capítulo 3D
 
   /** Libera a página: o site aparece enquanto a logo ainda se dispersa. */
   function revealHome(): void {
@@ -253,8 +254,13 @@ export async function startExperience(logoUrl: string): Promise<boolean> {
     }
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
-    // depois da seção do celular o catálogo cobre a tela: não há o que calcular nem desenhar
+    // Ao terminar o capítulo do iPhone, o canvas fixo deixava o último frame visível
+    // sobre o catálogo/rodapé. Esconda-o depois da seção e reexiba ao voltar a rolar.
     const covered = !introOn && scrollY >= exTop + exLen + innerHeight - 32;
+    if (covered !== canvasCovered) {
+      canvas.style.opacity = covered ? "0" : "1";
+      canvasCovered = covered;
+    }
     if (introOn) {
       tI += dt * speed;
       baseZ = intro.update(tI);
