@@ -170,7 +170,6 @@ export function initUI(): void {
   });
 
   reveal();
-  controleDeMovimento();
 }
 
 /** Revelação ao rolar: a hero entra quando a abertura termina; o resto, ao aparecer na tela. */
@@ -197,29 +196,4 @@ function reveal(): void {
     { rootMargin: "0px 0px -10% 0px" },
   );
   $$('[data-reveal=""]').forEach((el) => io.observe(el));
-}
-
-/** Botão "Reduzir movimento" do rodapé (some com animações e com o movimento do celular). */
-function controleDeMovimento(): void {
-  const rm = $("#rm");
-  const aplica = (on: boolean): void => {
-    document.documentElement.classList.toggle("rm", on);
-    rm.setAttribute("aria-pressed", String(on));
-  };
-  let guardado = false;
-  try {
-    guardado = localStorage.getItem("mira-rm") === "1";
-  } catch {
-    /* sem armazenamento: vale só nesta visita */
-  }
-  aplica(guardado || matchMedia("(prefers-reduced-motion: reduce)").matches);
-  rm.addEventListener("click", () => {
-    const on = !document.documentElement.classList.contains("rm");
-    aplica(on);
-    try {
-      localStorage.setItem("mira-rm", on ? "1" : "0");
-    } catch {
-      /* ignora */
-    }
-  });
 }
