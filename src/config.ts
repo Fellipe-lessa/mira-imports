@@ -64,4 +64,8 @@ export const wa = (mensagem: string): string =>
   `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(mensagem)}`;
 
 /** Categorias em destaque na página inicial. Preencha `imagem` com uma foto em public/ para trocar a ilustração. */
-export const DESTAQUES: Array<{ cat: CatKey; imagem?: string }> = [{ cat: "celulares" }, { cat: "fones" }, { cat: "acessorios" }];
+export const DESTAQUES: Array<{ cat: CatKey; imagem?: string }> = [
+  { cat: "celulares", imagem: "./produtos/categoria-celulares.png" },
+  { cat: "fones", imagem: "./produtos/categoria-fones.png" },
+  { cat: "acessorios", imagem: "./produtos/categoria-acessorios.png" },
+];
