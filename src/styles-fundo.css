@@ -1,0 +1,163 @@
+/*
+ * MIRA IMPORTS — FUNDO ATMOSFÉRICO
+ * Esta camada mexe SOMENTE em fundos (cores, degradês, grão, luz ambiente e a deriva lenta da luz).
+ * Não altera componentes, textos, imagens, botões, bordas, espaçamentos nem a cena 3D.
+ *
+ * Para desativar: em src/main.ts, remova a linha  import "./styles-fundo.css";
+ *
+ * Camadas fixas, de baixo para cima (todas atrás do conteúdo e do canvas 3D):
+ *   1. .grain          base: preto profundo, vinheta e luzes estáticas (pérola, grafite frio, amarelo)
+ *   2. .grain::before  halos amarelos/dourados, deriva muito lenta (só transform)
+ *   3. .grain::after   grão fino (dá textura e disfarça o "degrau" dos degradês escuros)
+ *   4. body::after     névoa perolada e luz fria, deriva lenta (acompanha a rolagem onde o navegador permite)
+ * Seções com fundo próprio ficam mais abaixo neste arquivo. A seção .ex (celular 3D) continua sem
+ * fundo próprio, para nada ficar por cima do canvas.
+ */
+
+/* ---------- 1. Base atmosférica fixa ---------- */
+.grain {
+  opacity: 1;
+  z-index: -1; /* abaixo da grade do body::before e do canvas; o fundo do body continua por baixo */
+  background-color: #070707;
+  background-image:
+    radial-gradient(120% 90% at 50% 40%, transparent 52%, #000000a6 100%),   /* vinheta: profundidade nas bordas */
+    radial-gradient(75% 55% at 86% 4%, #c9c2a826, transparent 70%),          /* pérola quente, topo direito */
+    radial-gradient(58% 48% at 3% 52%, #8696a81f, transparent 72%),          /* grafite frio, esquerda */
+    radial-gradient(52% 42% at 82% 100%, #f4ec0018, transparent 72%),        /* halo amarelo, base direita */
+    linear-gradient(180deg, #0b0b0a 0%, #12120f 42%, #0a0a09 72%, #060606 100%);
+}
+
+/* ---------- 2. Halos amarelos e dourados (deriva lenta) ---------- */
+.grain::before {
+  content: "";
+  position: absolute;
+  inset: -8%;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 34% at 22% 30%, #f4ec0014, #f4ec0006 45%, transparent 70%),
+    radial-gradient(30% 28% at 78% 68%, #e8c9601a, transparent 68%);
+  animation: mira-ar-a 80s cubic-bezier(.45, 0, .55, 1) infinite alternate;
+  will-change: transform;
+}
+
+/* ---------- 3. Grão fino ---------- */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("./assets/grain.png");
+  opacity: .55;
+}
+
+/* ---------- 4. Névoa perolada e luz fria ---------- */
+body::after {
+  content: "";
+  position: fixed;
+  inset: -8%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(34% 30% at 70% 22%, #d8d4c61a, transparent 70%),
+    radial-gradient(36% 34% at 18% 78%, #7f93ab18, transparent 72%);
+  animation: mira-ar-b 110s cubic-bezier(.45, 0, .55, 1) infinite alternate;
+  will-change: transform;
+}
+
+@keyframes mira-ar-a {
+  from { transform: translate3d(-4%, -3%, 0) scale(1); }
+  to   { transform: translate3d(4%, 3%, 0) scale(1.06); }
+}
+@keyframes mira-ar-b {
+  from { transform: translate3d(3%, 2%, 0) scale(1.05); }
+  to   { transform: translate3d(-3%, -3%, 0) scale(1); }
+}
+
+/* Onde o navegador suporta, a névoa acompanha a rolagem (muda o ritmo da luz ao longo da página) */
+@supports (animation-timeline: scroll()) {
+  body::after {
+    animation: mira-ar-rolagem linear both;
+    animation-timeline: scroll(root block);
+  }
+  @keyframes mira-ar-rolagem {
+    0%   { transform: translate3d(4%, -5%, 0); opacity: .95; }
+    38%  { transform: translate3d(1%, 0, 0);   opacity: .55; }
+    70%  { transform: translate3d(-3%, 3%, 0); opacity: 1; }
+    100% { transform: translate3d(-4%, 5%, 0); opacity: .65; }
+  }
+}
+
+/* ---------- Fundos próprios das seções (ritmo ao longo da página) ---------- */
+/* Hero: abaixo do canvas 3D (a hero cria o próprio contexto de empilhamento), sem tocar na faixa amarela */
+.hero {
+  background:
+    radial-gradient(58vw 52vh at 6% 96%, #f4ec0016, transparent 70%),     /* luz amarela difusa, base esquerda */
+    radial-gradient(70vw 46vh at 42% -4%, #d2cdb91c, transparent 72%),    /* névoa perolada no topo */
+    linear-gradient(180deg, transparent 72%, #04040499 100%);             /* repouso preto antes da faixa de diferenciais */
+}
+
+/* Faixa de diferenciais: grafite com centro levemente mais claro */
+.strip {
+  background: linear-gradient(90deg, #080807 0%, #11110e 35%, #14140f 50%, #11110e 65%, #080807 100%);
+}
+
+/* Categorias: halo amarelo atrás da introdução, transição perolada à direita, preto mais profundo no meio */
+.cats {
+  background:
+    radial-gradient(60vw 46vh at 10% 24%, #f4ec0012, transparent 72%),
+    radial-gradient(68vw 54vh at 96% 8%, #d6d1bf1c, transparent 74%),
+    linear-gradient(180deg, transparent 0%, #07070766 55%, transparent 100%);
+}
+
+/* Catálogo: o mesmo painel perolado, com reflexos suaves (quente embaixo, frio no centro) */
+.pearl {
+  background-image:
+    url("./assets/grain.png"),
+    radial-gradient(70% 50% at 96% 0%, #ffffffd9, transparent 70%),
+    radial-gradient(60% 55% at 4% 100%, #f4ec0020, transparent 70%),
+    radial-gradient(55% 45% at 30% 38%, #b9c4d018, transparent 72%),
+    linear-gradient(135deg, #eeece5 0%, #e4e1d8 54%, #f2f0e9 100%);
+}
+
+/* Serviços: região escura com luz mais fria à esquerda e um traço amarelo ao fundo */
+#servicos {
+  background:
+    radial-gradient(52vw 50vh at 0% 40%, #8496ac1a, transparent 72%),
+    radial-gradient(40vw 40vh at 100% 90%, #f4ec000d, transparent 72%),
+    linear-gradient(180deg, transparent, #0a0a0966 50%, transparent);
+}
+
+/* Sobre: preto profundo com um toque de grafite */
+#sobre {
+  background:
+    radial-gradient(46vw 46vh at 80% 30%, #3a3a3566, transparent 72%),
+    linear-gradient(180deg, transparent 0, #050505d0 22%, #060606c0 100%);
+}
+
+/* Contato: perolado mais quente, com reflexo dourado no canto inferior direito */
+#contato {
+  background-image:
+    url("./assets/grain.png"),
+    radial-gradient(70% 70% at 100% 100%, #f4ec0026, transparent 70%),
+    radial-gradient(60% 60% at 0% 0%, #ffffffdb, transparent 70%),
+    linear-gradient(160deg, #f1efe7, #e1ded3 62%, #ece9e0);
+}
+
+/* Rodapé: afunda no preto, com um halo amarelo discreto no canto */
+footer {
+  background:
+    radial-gradient(46vw 50vh at 100% 100%, #f4ec0016, transparent 72%),
+    linear-gradient(180deg, transparent 0%, #040404d9 55%, #030303f2 100%);
+}
+
+/* ---------- Movimento reduzido: fundo estático (as regras antigas com * não alcançam pseudo-elementos) ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .grain::before,
+  body::after {
+    animation: none;
+  }
+}
+.rm .grain::before,
+.rm body::after {
+  animation: none;
+}
