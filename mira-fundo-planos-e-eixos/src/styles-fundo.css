@@ -1,0 +1,281 @@
+/*
+ * MIRA IMPORTS — FUNDO: "PLANOS E EIXOS"
+ * Reformulação do background inspirada nas duas referências (Apex e "lab."): planos que se sobrepõem
+ * com sombra suave, uma faixa vertical amarelo e preto que atravessa a composição, um bloco horizontal
+ * que cruza atrás do produto, linhas finas, miras, losangos e geometria (anéis, arcos, esfera,
+ * poliedros e malha em perspectiva). Tudo em tons da marca: amarelo, preto, grafite, pérola e branco.
+ *
+ * Esta camada mexe SOMENTE em fundos. Não altera componentes, textos, imagens, botões, espaçamentos,
+ * navegação nem a cena 3D. Para desativar: em src/main.ts, remova  import "./styles-fundo.css";
+ * As formas são arquivos SVG editáveis em src/assets/fundo/.
+ *
+ * Planos, de trás para a frente (todos atrás do conteúdo e do canvas 3D, sem receber cliques):
+ *   1. .grain          base: preto profundo, vinheta e luzes estáticas
+ *   2. .grain::before  halos amarelos/dourados com deriva lenta (só transform)
+ *   3. main::before    CENOGRAFIA: a composição geométrica, que rola junto com a página
+ *   4. .grain::after   grão fino por cima de tudo
+ *   5. body::after     névoa perolada e luz fria (acompanha a rolagem onde o navegador permite)
+ * A seção .ex (celular 3D) continua sem fundo próprio: nada fica por cima do canvas.
+ */
+
+/* ---------- 1. Base atmosférica fixa ---------- */
+.grain {
+  opacity: 1;
+  z-index: -1;
+  background-color: #070707;
+  background-image:
+    radial-gradient(120% 90% at 50% 40%, transparent 50%, #000000b3 100%),
+    radial-gradient(75% 55% at 86% 4%, #d8d2b83a, transparent 70%),
+    radial-gradient(58% 48% at 3% 52%, #8fa0b230, transparent 72%),
+    radial-gradient(52% 42% at 82% 100%, #f4ec002e, transparent 72%),
+    linear-gradient(180deg, #0e0e0c 0%, #1a1a16 42%, #0c0c0a 72%, #060606 100%);
+}
+
+/* ---------- 2. Halos amarelos e dourados (deriva lenta) ---------- */
+.grain::before {
+  content: "";
+  position: absolute;
+  inset: -8%;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 34% at 22% 30%, #f4ec0026, #f4ec000a 45%, transparent 70%),
+    radial-gradient(30% 28% at 78% 68%, #e8c96030, transparent 68%);
+  animation: mira-ar-a 80s cubic-bezier(.45, 0, .55, 1) infinite alternate;
+  will-change: transform;
+}
+
+/* ---------- 3. Cenografia: a composição geométrica que acompanha a página ---------- */
+main {
+  position: relative; /* só para ancorar a cenografia; main não cria contexto de empilhamento */
+}
+main::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-image:
+    url("./assets/fundo/marcas.svg"),
+    url("./assets/fundo/orbita.svg"),
+    linear-gradient(180deg,#000000a6,transparent),
+    linear-gradient(90deg,#fff2002e,#ffffff14 40%,#ffffff06),
+    linear-gradient(90deg,#fff2002e,#ffffff14 40%,#ffffff06),
+    linear-gradient(90deg,#2d2c23 0%,#1e1d16 58%,#13130f 100%),
+    url("./assets/fundo/malha.svg"),
+    url("./assets/fundo/faixa.svg"),
+    url("./assets/fundo/plano.svg"),
+    url("./assets/fundo/arcos.svg"),
+    url("./assets/fundo/poliedro.svg"),
+    url("./assets/fundo/marcas.svg"),
+    url("./assets/fundo/orbita.svg"),
+    url("./assets/fundo/malha.svg"),
+    url("./assets/fundo/bloco.svg"),
+    url("./assets/fundo/plano.svg"),
+    url("./assets/fundo/arcos-d.svg"),
+    url("./assets/fundo/marcas.svg"),
+    url("./assets/fundo/faixa.svg"),
+    url("./assets/fundo/arcos-d.svg"),
+    url("./assets/fundo/orbita.svg");
+  background-size:
+    26vw auto,
+    72vw auto,
+    100vw 9vh,
+    100vw 1px,
+    100vw 1px,
+    100vw 52vh,
+    100vw 40vh,
+    20vw 160vh,
+    64vw auto,
+    50vw auto,
+    40vw auto,
+    24vw auto,
+    54vw auto,
+    100vw 44vh,
+    74vw 19vh,
+    56vw auto,
+    44vw auto,
+    22vw auto,
+    18vw 1000px,
+    46vw auto,
+    56vw auto;
+  background-position:
+    68vw 6vh,
+    31vw calc(50vh - 36vw),
+    0 82vh,
+    0 82vh,
+    0 30vh,
+    0 30vh,
+    0 60vh,
+    82vw 110vh,
+    40vw 165vh,
+    -8vw 235vh,
+    66vw 330vh,
+    56vw 396vh,
+    -16vw 410vh,
+    0 482vh,
+    40vw 582vh,
+    52vw 640vh,
+    right -8vw top 690vh,
+    70vw 700vh,
+    left 58vw bottom 4434px,
+    right -10vw bottom 1534px,
+    right -16vw bottom 700px;
+}
+
+/* ---------- 4. Grão fino ---------- */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image: url("./assets/grain.png");
+  opacity: .55;
+}
+
+/* ---------- 5. Névoa perolada e luz fria ---------- */
+body::after {
+  content: "";
+  position: fixed;
+  inset: -8%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(34% 30% at 70% 22%, #d8d4c62e, transparent 70%),
+    radial-gradient(36% 34% at 18% 78%, #7f93ab2a, transparent 72%);
+  animation: mira-ar-b 110s cubic-bezier(.45, 0, .55, 1) infinite alternate;
+  will-change: transform;
+}
+
+@keyframes mira-ar-a {
+  from { transform: translate3d(-4%, -3%, 0) scale(1); }
+  to   { transform: translate3d(4%, 3%, 0) scale(1.06); }
+}
+@keyframes mira-ar-b {
+  from { transform: translate3d(3%, 2%, 0) scale(1.05); }
+  to   { transform: translate3d(-3%, -3%, 0) scale(1); }
+}
+@supports (animation-timeline: scroll()) {
+  body::after {
+    animation: mira-ar-rolagem linear both;
+    animation-timeline: scroll(root block);
+  }
+  @keyframes mira-ar-rolagem {
+    0%   { transform: translate3d(4%, -5%, 0); opacity: .95; }
+    38%  { transform: translate3d(1%, 0, 0);   opacity: .55; }
+    70%  { transform: translate3d(-3%, 3%, 0); opacity: 1; }
+    100% { transform: translate3d(-4%, 5%, 0); opacity: .65; }
+  }
+}
+
+/* ---------- Fundos próprios das seções (suaves, para não esconder a cenografia) ---------- */
+.hero {
+  background:
+    radial-gradient(58vw 52vh at 6% 96%, #f4ec0020, transparent 70%),
+    radial-gradient(70vw 46vh at 42% -4%, #d2cdb914, transparent 72%),
+    linear-gradient(180deg, transparent 80%, #04040480 100%);
+}
+.strip {
+  background: linear-gradient(90deg, #080807 0%, #11110e 35%, #14140f 50%, #11110e 65%, #080807 100%);
+}
+.cats {
+  background:
+    radial-gradient(60vw 46vh at 10% 24%, #f4ec0018, transparent 72%),
+    radial-gradient(68vw 54vh at 96% 8%, #d6d1bf22, transparent 74%);
+}
+#servicos {
+  background:
+    radial-gradient(52vw 50vh at 0% 40%, #8496ac22, transparent 72%),
+    radial-gradient(40vw 40vh at 100% 90%, #f4ec0014, transparent 72%);
+}
+#sobre {
+  background: radial-gradient(46vw 46vh at 80% 30%, #3a3a3566, transparent 72%);
+}
+footer {
+  background:
+    url("./assets/fundo/malha.svg") 0 100% / 100vw 70% no-repeat,
+    radial-gradient(46vw 50vh at 100% 100%, #f4ec0026, transparent 72%),
+    linear-gradient(180deg, transparent 0%, #040404d9 55%, #030303f2 100%);
+}
+
+/* Painéis perolados: o mesmo painel, com reflexos suaves (quente embaixo, frio no centro) */
+.pearl {
+  background-image:
+    url("./assets/grain.png"),
+    radial-gradient(70% 50% at 96% 0%, #ffffffd9, transparent 70%),
+    radial-gradient(60% 55% at 4% 100%, #f4ec0020, transparent 70%),
+    radial-gradient(55% 45% at 30% 38%, #b9c4d018, transparent 72%),
+    linear-gradient(135deg, #eeece5 0%, #e4e1d8 54%, #f2f0e9 100%);
+}
+#contato {
+  background-image:
+    url("./assets/grain.png"),
+    radial-gradient(70% 70% at 100% 100%, #f4ec0026, transparent 70%),
+    radial-gradient(60% 60% at 0% 0%, #ffffffdb, transparent 70%),
+    linear-gradient(160deg, #f1efe7, #e1ded3 62%, #ece9e0);
+}
+
+/* ---------- Celular e tablet estreito: composição própria, menos camadas e formas maiores ---------- */
+@media (max-width: 900px) {
+  main::before {
+    opacity: .9;
+    background-image:
+      url("./assets/fundo/orbita.svg"),
+    url("./assets/fundo/marcas.svg"),
+    linear-gradient(90deg,#2d2c23 0%,#1e1d16 58%,#13130f 100%),
+    linear-gradient(90deg,#fff2002e,#ffffff14 40%,#ffffff06),
+    linear-gradient(90deg,#fff2002e,#ffffff14 40%,#ffffff06),
+    url("./assets/fundo/malha.svg"),
+    url("./assets/fundo/faixa.svg"),
+    url("./assets/fundo/arcos.svg"),
+    url("./assets/fundo/poliedro.svg"),
+    url("./assets/fundo/orbita.svg"),
+    url("./assets/fundo/malha.svg"),
+    url("./assets/fundo/bloco.svg"),
+    url("./assets/fundo/arcos-d.svg"),
+    url("./assets/fundo/arcos-d.svg"),
+    url("./assets/fundo/orbita.svg");
+    background-size:
+      130vw auto,
+    40vw auto,
+    100vw 36vh,
+    100vw 1px,
+    100vw 1px,
+    100vw 24vh,
+    34vw 140vh,
+    90vw auto,
+    70vw auto,
+    100vw auto,
+    100vw 30vh,
+    100vw 26vh,
+    80vw auto,
+    90vw auto,
+    110vw auto;
+    background-position:
+      -15vw calc(34vh - 65vw),
+    56vw 8vh,
+    0 50vh,
+    0 50vh,
+    0 86vh,
+    0 76vh,
+    70vw 110vh,
+    -45vw 220vh,
+    40vw 330vh,
+    -30vw 420vh,
+    0 482vh,
+    0 586vh,
+    right -40vw top 690vh,
+    right -45vw bottom 1900px,
+    right -55vw bottom 900px;
+  }
+  footer { background-size: 100vw 60%, auto, auto; }
+}
+
+/* ---------- Movimento reduzido: fundo estático ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .grain::before,
+  body::after { animation: none; }
+}
+.rm .grain::before,
+.rm body::after { animation: none; }
