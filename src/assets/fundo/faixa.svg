@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 1600" preserveAspectRatio="none">
+<defs>
+<linearGradient id="v" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b0a06"/><stop offset=".16" stop-color="#7a6d00"/><stop offset=".34" stop-color="#ece000"/><stop offset=".5" stop-color="#fff200"/><stop offset=".72" stop-color="#a89a00"/><stop offset="1" stop-color="#0b0a06"/></linearGradient>
+<linearGradient id="hz" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".28" stop-color="#fff"/><stop offset=".72" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<mask id="m"><rect width="400" height="1600" fill="url(#hz)"/></mask>
+<pattern id="s" width="70" height="70" patternUnits="userSpaceOnUse" patternTransform="rotate(18)"><rect width="14" height="70" fill="#fff" fill-opacity=".1"/></pattern>
+<radialGradient id="l" cx=".7" cy=".3" r=".6"><stop offset="0" stop-color="#fffbc4" stop-opacity=".7"/><stop offset="1" stop-color="#fffbc4" stop-opacity="0"/></radialGradient>
+</defs>
+<g mask="url(#m)" opacity=".62"><rect width="400" height="1600" fill="url(#v)"/><rect width="400" height="1600" fill="url(#s)"/><rect width="400" height="1600" fill="url(#l)"/></g>
+</svg>
